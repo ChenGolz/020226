@@ -2,89 +2,7 @@
 (function () {
   const qs = (s) => document.querySelector(s);
 
-  // Pagination helpers (v12) — keeps pages fast on mobile/iPad
-  function kbPerPage(kind){
-    var w = window.innerWidth || 1024;
-    // products are heavier; keep conservative
-    if (w <= 520) return 12;
-    if (w <= 900) return 16;
-    return 24;
-  }
-  function kbEnsurePager(afterEl, id){
-    var existing = document.getElementById(id);
-    if (existing) return existing;
-    var wrap = document.createElement('div');
-    wrap.id = id;
-    wrap.className = 'pager';
-    wrap.setAttribute('role','navigation');
-    wrap.setAttribute('aria-label','דפדוף');
-    // insert after the grid element
-    afterEl.parentNode.insertBefore(wrap, afterEl.nextSibling);
-    return wrap;
-  }
-  function kbRangeText(page, total, per){
-    if (!total) return '';
-    var start = (page-1)*per + 1;
-    var end = Math.min(total, page*per);
-    return start + '–' + end + ' מתוך ' + total;
-  }
-  function kbRenderPager(el, page, total, per, onGo){
-    if(!el) return;
-    var pages = Math.max(1, Math.ceil(total / per));
-    if (pages <= 1){
-      el.innerHTML = '';
-      el.style.display = 'none';
-      return;
-    }
-    el.style.display = '';
-    // clamp
-    page = Math.max(1, Math.min(page, pages));
-    var prevDisabled = page <= 1;
-    var nextDisabled = page >= pages;
-
-    var buttons = [];
-    // show window of pages around current
-    var win = 2;
-    var start = Math.max(1, page - win);
-    var end = Math.min(pages, page + win);
-    if (start > 1) { buttons.push({t:'1', p:1}); if (start > 2) buttons.push({t:'…', p:null}); }
-    for (var i=start;i<=end;i++) buttons.push({t:String(i), p:i, active:(i===page)});
-    if (end < pages) { if (end < pages-1) buttons.push({t:'…', p:null}); buttons.push({t:String(pages), p:pages}); }
-
-    var html = '<div class="pagerRow">' +
-      '<button class="pagerBtn" data-go="prev" ' + (prevDisabled?'disabled':'') + '>הקודם</button>' +
-      '<div class="pagerNums">';
-    for (var j=0;j<buttons.length;j++){
-      var b = buttons[j];
-      if (!b.p) html += '<span class="pagerEllipsis">…</span>';
-      else html += '<button class="pagerNum ' + (b.active?'is-active':'') + '" data-page="' + b.p + '">' + b.t + '</button>';
-    }
-    html += '</div>' +
-      '<button class="pagerBtn" data-go="next" ' + (nextDisabled?'disabled':'') + '>הבא</button>' +
-      '</div>';
-    el.innerHTML = html;
-
-    // bind
-    el.onclick = function(e){
-      var btn = e.target.closest('button');
-      if (!btn) return;
-      if (btn.dataset.go === 'prev' && !prevDisabled) return onGo(page-1);
-      if (btn.dataset.go === 'next' && !nextDisabled) return onGo(page+1);
-      var pg = parseInt(btn.dataset.page||'0',10);
-      if (pg) return onGo(pg);
-    };
-  }
-
   const q = qs("#q");
-
-  // Deep-link search: products.html?q=...
-  (function syncQueryToSearchBox(){
-    try{
-      var params = new URLSearchParams(location.search || '');
-      var qq = (params.get('q') || '').trim();
-      if (qq && q) q.value = qq;
-    }catch(e){}
-  })();
   const grid = qs("#grid");
   const liveCount = qs("#liveCount");
 
@@ -109,6 +27,9 @@
         -webkit-box-orient: vertical;
         overflow: hidden;
       }
+      .tag--sale{
+        font-weight: 700;
+      }
     `;
     document.head.appendChild(style);
   })();
@@ -125,7 +46,6 @@ const typeSelect = qs("#typeSelect"); // ✅ סוג מוצר (קבוצות + ת�
   const onlyVegan = null;
 const onlyIsrael = qs("#onlyIsrael");
   const onlyMen = qs("#onlyMen");
-  const onlyKids = qs("#onlyKids");
   const onlyFreeShip = qs("#onlyFreeShip");
 
   const chips = Array.from(document.querySelectorAll(".chip"));
@@ -302,66 +222,15 @@ const onlyIsrael = qs("#onlyIsrael");
     if (/whitening/i.test(lower) || /הלבנת\s*שיניים/i.test(text)) return "הלבנת שיניים";
 
     // Hair
-    // Avoid misclassifying bubble bath / body wash combos as shampoo
-    if (/(bubble\s*bath|bath\s*soak|bath\s*wash|body\s*wash|shower\s*gel)/i.test(lower) || /קצף\s*אמבט|אמבט|ג'?ל\s*רחצה|סבון\s*רחצה|רחצה/i.test(text)) {
-      return "סבון רחצה";
-    }
-
-    // Only treat as hair products when the context is באמת שיער/קרקפת
-    const hairContext =
-      areaKey === "hair" ||
-      areaKey === "scalp" ||
-      hasCat("hair") ||
-      hasCat("scalp") ||
-      /שיער|קרקפת/i.test(text) ||
-      /\b(hair|scalp)\b/i.test(lower);
-
-    if ((/שמפו|shampoo/i.test(lower) || /שמפו/i.test(text)) && hairContext) return "שמפו";
-    if ((/מרכך|conditioner/i.test(lower) || /מרכך/i.test(text)) && hairContext) return "מרכך";
-
+    if (/שמפו|shampoo/i.test(lower) || /שמפו/i.test(text)) return "שמפו";
+    if (/מרכך|conditioner/i.test(lower) || /מרכך/i.test(text)) return "מרכך";
     if (/מסכה/i.test(text) || /mask/i.test(lower)) {
       if (areaKey === "hair") return "מסכה לשיער";
       return "מסכה";
     }
-
-    // Oil — avoid false positives from "עור שמן / oily skin"
-    const hasOilCategory =
-      hasCat("oil") ||
-      hasCat("face oils") ||
-      hasCat("hair-oil") ||
-      hasCat("lip-oil") ||
-      hasCat("body-oil");
-
-    const hasExplicitOilPhrase =
-      /\b(lip\s*oil|hair\s*oil|face\s*oil|body\s*oil)\b/i.test(lower) ||
-      /שמן\s*(?:פנים|לפנים|לשיער|לגוף|שפתיים|לזקן|טיפולי|מזין)/i.test(text);
-
-    const oilySkinPhrase =
-      /עור\s*שמן|לעור\s*שמן|שמן\s*ומעורב|שומנ(?:י|ית|יות)/i.test(text) ||
-      /oily\s*skin/i.test(lower);
-
-    // Soap bars often include oils in the name/ingredients (e.g. "olive oil soap"),
-    // but we still want to label them as "סבון" not "שמן".
-    const soapLike =
-      /\bsoap\b/i.test(lower) ||
-      /(cleansing\s*bar|bar\s*soap|soap\s*bar)/i.test(lower) ||
-      /סבון/i.test(text);
-
-    const hasGenericOilWord =
-      /\boil\b/i.test(lower) ||
-      /שמן\s+\S+/i.test(text);
-
-    const isOilProduct =
-      hasOilCategory ||
-      hasExplicitOilPhrase ||
-      (hasGenericOilWord && !soapLike);
-
-    // If it's only mentioning oily skin (and not an actual oil product), don't label as oil.
-    if (isOilProduct && !(oilySkinPhrase && !hasExplicitOilPhrase && !hasOilCategory)) {
+    if (/שמן/i.test(text) || /\boil\b/i.test(lower)) {
       if (areaKey === "hair") return "שמן לשיער";
       if (areaKey === "lips") return "שמן לשפתיים";
-      if (areaKey === "face") return "שמן לפנים";
-      if (areaKey === "body") return "שמן לגוף";
       return "שמן";
     }
 
@@ -385,21 +254,8 @@ const onlyIsrael = qs("#onlyIsrael");
     }
 
     // Cleanser / soap / wash
-    // Prefer "סבון" when the name clearly indicates soap (even if it also says "ניקוי")
-    const isSoap = /\bsoap\b/i.test(lower) || /סבון/i.test(text);
-
-    if (isSoap) {
-      if (/ידיים/i.test(text) || /\bhand\b/i.test(lower)) return "סבון ידיים";
-      if (/גוף/i.test(text) || /\bbody\b/i.test(lower)) return "סבון גוף";
-      if (areaKey === "face" || /פנים/i.test(text) || /\bface\b/i.test(lower)) return "סבון פנים";
-      if (/רחצה|אמבט|קצף/i.test(text) || /(shower|bath|wash)/i.test(lower)) return "סבון רחצה";
-      return "סבון";
-    }
-
-    // Otherwise it's a cleanser/wash (not a soap)
-    if (/cleanser|cleansing|wash/i.test(lower) || /ניקוי|קצף/i.test(text)) {
+    if (/cleanser|wash|soap/i.test(lower) || /סבון|ניקוי|קצף/i.test(text)) {
       if (areaKey === "face") return "ניקוי פנים";
-      if (areaKey === "body") return "רחצה";
       return "ניקוי";
     }
 
@@ -447,37 +303,90 @@ const onlyIsrael = qs("#onlyIsrael");
   }
 
 
+  // ---------------------------------------------------------------------------
+  // Certifications / labels:
+  // - If the product explicitly defines isVegan / isPeta / isLB (true/false), we use that.
+  // - Otherwise, we auto-fill from data/intl-brands.json by matching the brand name.
+  // - If the brand does not exist in intl-brands, labels are hidden by default.
+  // - Missing params are OK (undefined) — we only show labels when value === true.
+  // ---------------------------------------------------------------------------
+
+  function pickBool() {
+    for (var i = 0; i < arguments.length; i++) {
+      if (typeof arguments[i] === "boolean") return arguments[i];
+    }
+    return undefined;
+  }
+
+  function normalizeBrandKey(v) {
+    return String(v || "")
+      .trim()
+      .toLowerCase()
+      .replace(/&/g, "and")
+      .replace(/\+/g, " ")
+      .replace(/['’`]/g, "")
+      .replace(/[^a-z0-9\u0590-\u05FF ]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function flagsFromIntlBrand(b) {
+    var badges = Array.isArray(b && b.badges) ? b.badges : [];
+    var badgeStr = badges.map(function (x) { return String(x || "").toLowerCase(); }).join(" | ");
+
+    var isLB = /leaping\s*bunny/.test(badgeStr);
+    var isPeta = /\bpeta\b/.test(badgeStr);
+
+    // "vegan" is also a direct boolean in intl-brands.json
+    var isVegan = (typeof (b && b.vegan) === "boolean")
+      ? b.vegan
+      : /\bvegan\b/.test(badgeStr);
+
+    return { isVegan: isVegan, isPeta: isPeta, isLB: isLB };
+  }
+
+  var __KBWG_BRAND_FLAGS = (function () {
+    var arr = Array.isArray(window.INTL_BRANDS) ? window.INTL_BRANDS : [];
+    var map = new Map();
+    for (var i = 0; i < arr.length; i++) {
+      var b = arr[i] || {};
+      var name = b.name || b.brand || b.title || "";
+      var key = normalizeBrandKey(name);
+      if (!key || map.has(key)) continue;
+      map.set(key, flagsFromIntlBrand(b));
+    }
+    return map;
+  })();
+
+  function resolveProductLabels(p) {
+    var brandKey = normalizeBrandKey(p && p.brand ? p.brand : "");
+    var fromBrand = __KBWG_BRAND_FLAGS.get(brandKey);
+
+    return {
+      isVegan: (typeof p.isVegan === "boolean") ? p.isVegan : (fromBrand ? fromBrand.isVegan : undefined),
+      isPeta: (typeof p.isPeta === "boolean") ? p.isPeta : (fromBrand ? fromBrand.isPeta : undefined),
+      isLB: (typeof p.isLB === "boolean") ? p.isLB : (fromBrand ? fromBrand.isLB : undefined)
+    };
+  }
+
+  function enrichProductWithBrandLabels(p) {
+    var labels = resolveProductLabels(p || {});
+    return Object.assign({}, p, { __labels: labels });
+  }
+
+
+
 function normalizeProduct(p) {
     const offers = Array.isArray(p?.offers) ? p.offers : [];
     const storeRegion = String(p?.storeRegion ?? "").toLowerCase();
 
-    // Kids / babies: allow marking explicitly, or infer from name
-    const nameText = String(p?.name ?? "");
-    const nameLower = nameText.toLowerCase();
-    const kidsByName =
-      /ילד|ילדים|תינוק|תינוקות|בייבי|פעוט/i.test(nameText) ||
-      /(kid|kids|child|children|baby|babies|toddler)/i.test(nameLower);
-
-    const isKids = Boolean(
-      p?.isKids ?? p?.kids ?? p?.isChildren ?? p?.children
-    ) || kidsByName;
-
-    // Ensure "kids" category exists when relevant (used for filtering + tags)
-    const rawCats = Array.isArray(p?.categories) ? p.categories : [];
-    const catsLower = rawCats.map((c) => String(c).toLowerCase());
-    const categories = rawCats.slice();
-    if (isKids && !catsLower.includes("kids")) categories.push("kids");
-
-
     return {
       ...p,
       // דגלים לוגיים אחידים
-      isLB: Boolean(p?.isLB ?? p?.lb ?? p?.isLeapingBunny),
-      isPeta: Boolean(p?.isPeta ?? p?.peta),
-      isVegan: Boolean(p?.isVegan ?? p?.vegan),
+      isLB: pickBool(p?.isLB, p?.lb, p?.isLeapingBunny),
+      isPeta: pickBool(p?.isPeta, p?.peta),
+      isVegan: pickBool(p?.isVegan, p?.vegan),
       isIsrael: Boolean(p?.isIsrael ?? p?.israel ?? (storeRegion === "il")),
-      isKids,
-      categories,
       // offers אחיד (meta, region, freeShipOver)
       offers: offers.map((o) => {
         const rawUrl = String(o?.url || "");
@@ -548,7 +457,8 @@ function normalizeProduct(p) {
   // Source of truth: data/products.json (loaded by products-json-loader.js)
   // Policy: show only Vegan-labeled products.
   const data = dedupeProducts((window.PRODUCTS || []).map(normalizeProduct))
-    .filter((p) => Boolean(p && p.isVegan));
+    .map(enrichProductWithBrandLabels)
+    .filter((p) => Boolean(p && p.__labels && p.__labels.isVegan === true));
 
   function unique(arr) {
     return Array.from(new Set(arr))
@@ -1181,19 +1091,13 @@ function normalizeProduct(p) {
       },
 
       // Approvals
-      () => !onlyLB?.checked || p.isLB,
-      () => !onlyPeta?.checked || p.isPeta,
+      () => !onlyLB?.checked || (p.__labels && p.__labels.isLB === true),
+      () => !onlyPeta?.checked || (p.__labels && p.__labels.isPeta === true),
       () => !onlyIsrael?.checked || p.isIsrael,
       // מוצרים המיועדים לגברים (לא תקף בקטגוריית איפור)
       () => {
         if (!onlyMen?.checked) return true;
         return isMenTargetedProduct(p);
-      },
-
-// מוצרים לילדים / תינוקות
-      () => {
-        if (!onlyKids?.checked) return true;
-        return !!p.isKids;
       },
 
       // Only products with "free shipping over"
@@ -1298,12 +1202,12 @@ function normalizeProduct(p) {
     });
   }
 
-  function tag(label) {
+  function tag(label, extraClass) {
     const s = document.createElement("span");
-    s.className = "tag";
+    s.className = "tag" + (extraClass ? " " + extraClass : "");
     s.textContent = label;
     // Don’t translate certification tags/badges (Weglot)
-    if (/(Leaping Bunny|PETA|Vegan|INTL)/i.test(String(label))) {
+    if (/(Leaping Bunny|PETA|Vegan|INTL|טבעוני)/i.test(String(label))) {
       s.setAttribute("data-wg-notranslate", "true");
       s.classList.add("wg-notranslate");
     }
@@ -1311,12 +1215,7 @@ function normalizeProduct(p) {
   }
 
   let renderRaf = 0;
-  let page = 1;
-  let perPage = kbPerPage('products');
-  let pagerEl = null;
   function scheduleRender() {
-    // user changed filters → go back to first page
-    page = 1;
     cancelAnimationFrame(renderRaf);
     renderRaf = requestAnimationFrame(render);
   }
@@ -1327,21 +1226,9 @@ function normalizeProduct(p) {
     const list = data.filter(matches);
     sortList(list);
 
-    
+    const frag = document.createDocumentFragment();
 
-    // Pagination slice
-    perPage = kbPerPage('products');
-    if (!pagerEl) pagerEl = kbEnsurePager(grid, 'productsPager');
-    var total = list.length;
-    var pages = Math.max(1, Math.ceil(total / perPage));
-    if (page > pages) page = pages;
-    kbRenderPager(pagerEl, page, total, perPage, function(n){ page = n; render(); });
-    var start = (page-1)*perPage;
-    var end = Math.min(total, start + perPage);
-    var pageItems = list.slice(start, end);
-const frag = document.createDocumentFragment();
-
-    pageItems.forEach((p) => {
+    list.forEach((p) => {
       const card = document.createElement("article");
       card.className = "productCard";
 
@@ -1355,11 +1242,6 @@ const frag = document.createDocumentFragment();
         img.decoding = "async";
         img.width = 640;
         img.height = 640;
-        // Avoid broken cards / console noise when an image is missing.
-        img.onerror = function(){
-          try{ this.onerror = null; }catch(e){}
-          this.src = 'assets/img/products/placeholder.jpg';
-        };
         media.appendChild(img);
       } else {
         const ph = document.createElement("div");
@@ -1414,9 +1296,10 @@ const frag = document.createDocumentFragment();
       }
 
       const approvals = [];
-      if (p.isPeta) approvals.push("PETA");
-      if (p.isVegan) approvals.push("Vegan");
-      if (p.isLB) approvals.push("Leaping Bunny");
+      const lbl = (p && p.__labels) ? p.__labels : {};
+      if (lbl.isPeta === true) approvals.push("PETA");
+      if (lbl.isVegan === true) approvals.push("Vegan");
+      if (lbl.isLB === true) approvals.push("Leaping Bunny");
 
       const bestOffer = getOfferWithMinFreeShip(p);
       if (bestOffer) {
@@ -1431,11 +1314,12 @@ const frag = document.createDocumentFragment();
 
       const tags = document.createElement("div");
       tags.className = "tags";
-      if (p.isLB) tags.appendChild(tag("Leaping Bunny"));
-      if (p.isPeta) tags.appendChild(tag("PETA"));
-      if (p.isVegan) tags.appendChild(tag("טבעוני"));
+      const lbl2 = (p && p.__labels) ? p.__labels : {};
+      if (lbl2.isLB === true) tags.appendChild(tag("Leaping Bunny"));
+      if (lbl2.isPeta === true) tags.appendChild(tag("PETA"));
+      if (lbl2.isVegan === true) tags.appendChild(tag("טבעוני"));
+      if (p.isDiscounted === true) tags.appendChild(tag("מבצע", "tag--sale"));
       if (p.isIsrael) tags.appendChild(tag("אתר ישראלי"));
-      if (p.isKids) tags.appendChild(tag("ילדים"));
 
       const offerList = document.createElement("div");
       offerList.className = "offerList";
@@ -1494,10 +1378,7 @@ const frag = document.createDocumentFragment();
       window.Weglot.refresh();
     }
 
-    if (liveCount)     if (liveCount) {
-      var rangeTxt = kbRangeText(page, total, perPage);
-      liveCount.textContent = rangeTxt ? (rangeTxt) : String(total);
-    }
+    if (liveCount) liveCount.textContent = `${list.length} מוצרים`;
 
     const empty = qs("#emptyState");
     if (empty) empty.hidden = list.length !== 0;
@@ -1512,7 +1393,7 @@ function bind() {
     if (
       e.target &&
       e.target.matches(
-        "#q, #brandSelect, #storeSelect, #typeSelect, #sort, #onlyLB, #onlyPeta, #onlyIsrael, #onlyFreeShip, #onlyMen, #onlyKids"
+        "#q, #brandSelect, #storeSelect, #typeSelect, #sort, #onlyLB, #onlyPeta, #onlyIsrael, #onlyFreeShip, #onlyMen"
       )
     ) {
       scheduleRender();
@@ -1523,7 +1404,7 @@ function bind() {
     if (
       e.target &&
       e.target.matches(
-        "#q, #brandSelect, #storeSelect, #typeSelect, #sort, #onlyLB, #onlyPeta, #onlyIsrael, #onlyFreeShip, #onlyMen, #onlyKids"
+        "#q, #brandSelect, #storeSelect, #typeSelect, #sort, #onlyLB, #onlyPeta, #onlyIsrael, #onlyFreeShip, #onlyMen"
       )
     ) {
       scheduleRender();

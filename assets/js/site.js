@@ -2,82 +2,33 @@
 
 (function () {
   // Build marker: use this to verify you loaded the latest JS
-  window.KBWG_BUILD = '2026-02-02-v19';
+  window.KBWG_BUILD = '2026-01-12-v6';
   try { console.info('[KBWG] build', window.KBWG_BUILD); } catch(e) {}
-    
-function kbwgInjectFaqSchema(){
-  try{
-    if (window.__KBWG_FAQ_SCHEMA_DONE) return;
-    window.__KBWG_FAQ_SCHEMA_DONE = true;
+  // Auto-highlight active nav (fallback if aria-current isn't set)
+  const pathname = window.location.pathname || '';
+  document.querySelectorAll('.nav a').forEach(a => {
+    const href = a.getAttribute('href');
+    if (!href) return;
 
-    let faqs = null;
-    const el = document.getElementById('kbwgFaqData');
-    if (el && el.textContent && el.textContent.trim()){
-      try{
-        const parsed = JSON.parse(el.textContent.trim());
-        if (Array.isArray(parsed) && parsed.length){
-          faqs = parsed.filter(x => x && x.q && x.a).slice(0, 12);
-        }
-      }catch(_){}
+    const isHomeLink = (href === 'index.html' || href.endsWith('/index.html'));
+    const onHome = (
+      pathname === '/' ||
+      pathname === '' ||
+      /\/index\.html?$/.test(pathname) ||
+      /\/$/.test(pathname)
+    );
+
+    if (
+      (isHomeLink && onHome) ||
+      pathname.endsWith('/' + href) ||
+      pathname.endsWith(href)
+    ) {
+      a.classList.add('active');
+      a.setAttribute('aria-current', 'page');
     }
+  });
 
-    if (!faqs){
-      faqs = [
-        { q: 'מה זה “100% טבעוני”?', a: 'מוצר ללא רכיבים מן החי — כולל נגזרות כמו דבש, לנולין, קרמין וכדומה.' },
-        { q: 'מה זה “לא נוסה על בעלי חיים”?', a: 'אנחנו מציגים רק מותגים ומוצרים שמוצהרים/מאומתים כלא מבצעים ניסויים בבעלי חיים.' },
-        { q: 'איך אתם בודקים מותגים?', a: 'משלבים הצהרה רשמית של מותג + הצלבה עם מקורות מוכרים ובדיקה תקופתית. פירוט בעמוד “שיטה”.' },
-        { q: 'מה לעשות אם מצאתי מידע שגוי?', a: 'שלחי לנו דרך “צור קשר” — זה עוזר לשמור את המאגר חינמי ומדויק.' }
-      ];
-    }
-
-    const schema = {
-      "@context":"https://schema.org",
-      "@type":"FAQPage",
-      "mainEntity": faqs.map(f => ({
-        "@type":"Question",
-        "name": String(f.q),
-        "acceptedAnswer": { "@type":"Answer", "text": String(f.a) }
-      }))
-    };
-
-    const s = document.createElement('script');
-    s.type = 'application/ld+json';
-    s.textContent = JSON.stringify(schema);
-    document.head.appendChild(s);
-  }catch(_){}
-}
-
-function kbwgSetActiveNav() {
-    // Auto-highlight active nav (fallback if aria-current isn't set)
-      const pathname = window.location.pathname || '';
-      document.querySelectorAll('.nav a').forEach(a => {
-        const href = a.getAttribute('href');
-        if (!href) return;
-    
-        const isHomeLink = (href === 'index.html' || href.endsWith('/index.html'));
-        const onHome = (
-          pathname === '/' ||
-          pathname === '' ||
-          /\/index\.html?$/.test(pathname) ||
-          /\/$/.test(pathname)
-        );
-    
-        if (
-          (isHomeLink && onHome) ||
-          pathname.endsWith('/' + href) ||
-          pathname.endsWith(href)
-        ) {
-          a.classList.add('active');
-          a.setAttribute('aria-current', 'page');
-        }
-      });
-  }
-
-  // Run now + after dynamic header injection
-  kbwgSetActiveNav();
-  window.addEventListener('kbwg:layout-ready', kbwgSetActiveNav);
-
-// Hero quote rotator (rotates through the 5 quotes)
+  // Hero quote rotator (rotates through the 5 quotes)
   const QUOTES = [
     "היו טובים לכל היצורים.",
     "חמלה היא האופנה הכי יפה.",
@@ -112,207 +63,93 @@ function kbwgSetActiveNav() {
     });
   }
 
-    function kbwgInitMobileNav() {
-    // Mobile nav (drawer) + overlay — hardened against "ghost overlay" and z-index issues.
-    const header = document.getElementById('siteHeader');
-    if (!header) return;
+  // Mobile nav: inject a hamburger button and collapse nav on small screens
+  const header = document.getElementById('siteHeader');
+  const headerRow = header ? header.querySelector('.headerRow') : null;
+  const nav = header ? header.querySelector('.nav') : null;
 
-    const btn = header.querySelector('.navToggle');
-    const nav = header.querySelector('.nav');
-    if (!btn || !nav) return;
+  if (header && headerRow && nav) {
+    // Ensure nav has an id for aria-controls
+    if (!nav.id) nav.id = 'primaryNav';
 
-    // Save original placement so we can temporarily move the drawer to <body> on mobile.
-    // This avoids stacking-context bugs (sticky/backdrop-filter/transform ancestors) that can
-    // cause the drawer to appear "greyed" behind the overlay on some mobile browsers.
-    const originalParent = nav.parentNode;
-    const originalNext = nav.nextSibling;
+    // Inject only once
+    if (!header.querySelector('.navToggle')) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'navToggle';
+      btn.setAttribute('aria-label', 'פתיחת תפריט');
+      btn.setAttribute('aria-controls', nav.id);
+      btn.setAttribute('aria-expanded', 'false');
+      btn.innerHTML = '<span class="navToggleIcon" aria-hidden="true">☰</span><span class="navToggleText">תפריט</span>';
 
-    const attachNavToBody = () => {
-      if (nav.parentNode !== document.body) {
-        // Store once for safety (in case init runs again after injection)
-        if (!nav.__kbwgOriginalParent) nav.__kbwgOriginalParent = originalParent;
-        if (!nav.__kbwgOriginalNext) nav.__kbwgOriginalNext = originalNext;
-        document.body.appendChild(nav);
-        nav.classList.add('kbwgDrawerNav');
+      // Place next to logo (before nav)
+      headerRow.insertBefore(btn, nav);
+
+      // Backdrop overlay for mobile drawer
+      let overlay = document.querySelector('.navOverlay');
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.className = 'navOverlay';
+        document.body.appendChild(overlay);
       }
-    };
 
-    const restoreNavFromBody = () => {
-      const p = nav.__kbwgOriginalParent || originalParent;
-      if (!p) return;
-      if (nav.parentNode === document.body) {
-        try {
-          const next = nav.__kbwgOriginalNext || originalNext;
-          if (next && next.parentNode === p) p.insertBefore(nav, next);
-          else p.appendChild(nav);
-        } catch (_) {
-          p.appendChild(nav);
-        }
-        nav.classList.remove('kbwgDrawerNav');
-      }
-    };
 
-    // Ensure we only init once
-    if (header.dataset.kbwgMobileNavInit === '1') return;
-    header.dataset.kbwgMobileNavInit = '1';
-
-    // Overlay (single shared instance)
-    let overlay = document.querySelector('.navOverlay');
-    if (!overlay) {
-      overlay = document.createElement('div');
-      overlay.className = 'navOverlay';
-      document.body.appendChild(overlay);
-    }
-
-    // Close other <details> groups when one opens (header nav)
-    function closeAllNavGroups(except) {
-      nav.querySelectorAll('details.navGroup[open]').forEach((d) => {
-        if (except && d === except) return;
-        d.removeAttribute('open');
-      });
-    }
-    nav.querySelectorAll('details.navGroup').forEach((d) => {
-      d.addEventListener('toggle', () => {
-        if (d.open) closeAllNavGroups(d);
-      });
-    });
-
-    const mq = window.matchMedia('(max-width: 900px)');
-
-    let isOpen = false;
-    let hideTimer = null;
-
-    const applyDrawerState = (open) => {
-      isOpen = !!open;
-      if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
-
-      if (!mq.matches) {
-        // Desktop: leave nav as-is
-        restoreNavFromBody();
-        overlay.style.setProperty('display', 'none', 'important');
-        overlay.style.setProperty('pointer-events', 'none', 'important');
-        document.body.classList.remove('menuOpen', 'menuopen');
-        header.classList.remove('navOpen', 'navopen');
+      const close = () => {
+        header.classList.remove('navOpen'); header.classList.remove('navopen');
+        document.body.classList.remove('menuOpen'); document.body.classList.remove('menuopen');
         btn.setAttribute('aria-expanded', 'false');
-
-        // clean inline drawer styles we might have set
-        ['display','transform','pointer-events','visibility','position','top','right','bottom','left','height','width','z-index','background','box-shadow','border-left','padding','overflow-y','flex-direction'].forEach((p)=>{
-          nav.style.removeProperty(p);
-        });
-        return;
-      }
-
-      // Mobile: move drawer nav to <body> to eliminate stacking-context issues.
-      attachNavToBody();
-
-      // Always enforce very high z-index on mobile, independent of CSS
-      overlay.style.setProperty('z-index', '2147483640', 'important');
-      nav.style.setProperty('z-index', '2147483646', 'important');
-
-      // Drawer base geometry (fixed panel from the right)
-      nav.style.setProperty('position', 'fixed', 'important');
-      nav.style.setProperty('top', '0', 'important');
-      nav.style.setProperty('right', '0', 'important');
-      nav.style.setProperty('bottom', '0', 'important');
-      nav.style.setProperty('left', 'auto', 'important');
-      nav.style.setProperty('height', '100dvh', 'important');
-      nav.style.setProperty('width', 'min(86vw, 360px)', 'important');
-      nav.style.setProperty('flex-direction', 'column', 'important');
-      nav.style.setProperty('background', '#fff', 'important');
-      nav.style.setProperty('overflow-y', 'auto', 'important');
-      nav.style.setProperty('box-shadow', '-18px 0 40px rgba(0,0,0,.15)', 'important');
-      nav.style.setProperty('border-left', '1px solid rgba(15,23,42,.08)', 'important');
-      nav.style.setProperty('padding', '10px 12px', 'important');
-
-      if (open) {
-        header.classList.add('navOpen', 'navopen');
-        document.body.classList.add('menuOpen', 'menuopen');
+      };
+      const open = () => {
+        header.classList.add('navOpen'); header.classList.add('navopen');
+        document.body.classList.add('menuOpen'); document.body.classList.add('menuopen');
         btn.setAttribute('aria-expanded', 'true');
+      };
 
-        // Make sure overlay exists and is actually gone/visible (avoid Safari ghost blur)
-        overlay.style.setProperty('display', 'block', 'important');
-        overlay.style.setProperty('position', 'fixed', 'important');
-        overlay.style.setProperty('inset', '0', 'important');
-        overlay.style.setProperty('background', 'rgba(2,6,23,.35)', 'important');
-        overlay.style.setProperty('backdrop-filter', 'blur(2px)', 'important');
-        overlay.style.setProperty('-webkit-backdrop-filter', 'blur(2px)', 'important');
-        overlay.style.setProperty('pointer-events', 'auto', 'important');
-        overlay.style.setProperty('opacity', '1', 'important');
 
-        nav.style.setProperty('display', 'flex', 'important');
-        nav.style.setProperty('visibility', 'visible', 'important');
-        nav.style.setProperty('pointer-events', 'auto', 'important');
-        nav.style.setProperty('transform', 'translateX(0)', 'important');
-      } else {
-        header.classList.remove('navOpen', 'navopen');
-        document.body.classList.remove('menuOpen', 'menuopen');
-        btn.setAttribute('aria-expanded', 'false');
-        closeAllNavGroups();
+      // Insert a branded header inside the drawer (mobile only)
+      if (!nav.querySelector('.navDrawerHeader')) {
+        const drawerHeader = document.createElement('div');
+        drawerHeader.className = 'navDrawerHeader';
+        drawerHeader.innerHTML = `
+          <a class="navDrawerLogo" href="index.html" aria-label="דף הבית">
+            <img class="navDrawerLogoImg" src="assets/img/logo.png" alt="ללא ניסויים" width="34" height="34" />
+            <span class="navDrawerLogoText">ללא ניסויים</span>
+          </a>
+          <button type="button" class="navDrawerClose" aria-label="סגירה">×</button>
+        `;
+        nav.insertBefore(drawerHeader, nav.firstChild);
 
-        overlay.style.setProperty('display', 'none', 'important');
-        overlay.style.setProperty('pointer-events', 'none', 'important');
-        overlay.style.setProperty('opacity', '0', 'important');
-        overlay.style.setProperty('backdrop-filter', 'none', 'important');
-        overlay.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
-
-        nav.style.setProperty('transform', 'translateX(105%)', 'important');
-        nav.style.setProperty('pointer-events', 'none', 'important');
-
-        // Kill hit-area completely after transition
-        hideTimer = setTimeout(() => {
-          if (!isOpen) nav.style.setProperty('display', 'none', 'important');
-        }, 260);
+        const closeBtn = drawerHeader.querySelector('.navDrawerClose');
+        const homeLogo = drawerHeader.querySelector('.navDrawerLogo');
+        if (closeBtn) closeBtn.addEventListener('click', close);
+        if (homeLogo) homeLogo.addEventListener('click', close);
       }
-    };
 
-    const open = () => applyDrawerState(true);
-    const close = () => applyDrawerState(false);
-    const toggle = () => (isOpen ? close() : open());
 
-    // Click handlers
-    btn.addEventListener('click', (e) => {
-      if (!mq.matches) return;
-      e.preventDefault();
-      toggle();
-    });
+      btn.addEventListener('click', () => {
+        const isOpen = header.classList.contains('navOpen');
+        isOpen ? close() : open();
+      });
+      overlay.addEventListener('click', close);
 
-    overlay.addEventListener('click', () => close());
 
-    // Close on ESC
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && isOpen) close();
-    });
+      // Close when a link is clicked
+      nav.querySelectorAll('a').forEach(a => a.addEventListener('click', close));
 
-    // Close when clicking a link inside the drawer (mobile only)
-    nav.addEventListener('click', (e) => {
-      if (!mq.matches) return;
-      const a = e.target && e.target.closest ? e.target.closest('a') : null;
-      if (a && a.getAttribute('href')) close();
-    });
+      // Close on Escape
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') close();
+      });
 
-    // Keep state in sync on breakpoint changes
-    const onMq = () => {
-      if (!mq.matches) {
-        applyDrawerState(false);
-      } else {
-        // Start closed in mobile unless aria says otherwise
-        const expanded = btn.getAttribute('aria-expanded') === 'true';
-        applyDrawerState(expanded);
-      }
-    };
-
-    if (mq.addEventListener) mq.addEventListener('change', onMq);
-    else mq.addListener(onMq);
-
-    // Initial
-    onMq();
+      // Close when switching to desktop width
+      const mq = window.matchMedia('(min-width: 901px)');
+      const onMq = () => { if (mq.matches) close(); };
+      mq.addEventListener ? mq.addEventListener('change', onMq) : mq.addListener(onMq);
+      onMq();
+    }
   }
 
-  // Run now + after dynamic header injection
-  kbwgInitMobileNav();
-  window.addEventListener('kbwg:layout-ready', kbwgInitMobileNav);
-
-// מוצרים page: collapsible Amazon US/UK info box
+    // מוצרים page: collapsible Amazon US/UK info box
     // Makes the heading "איך זה עובד עם אמזון ארה"ב ואנגליה?" clickable and toggles the extra details.
     document.addEventListener('DOMContentLoaded', function () {
       var btn = document.querySelector('.amazon-toggle');
@@ -729,7 +566,7 @@ window.addEventListener('DOMContentLoaded', () => {
     if (hero && !hero.querySelector('.heroVeganLine')) {
       const p = document.createElement('p');
       p.className = 'heroVeganLine';
-      p.innerHTML = 'כל המותגים והמוצרים באתר הם <b>100% טבעוניים</b> ו<b>שלא נוסו על בעלי חיים</b> .';
+      p.innerHTML = 'כל המותגים והמוצרים באתר הם <b>100% טבעוניים</b> ו<b>ללא ניסויים בבעלי חיים</b> (Cruelty‑Free).';
 
       // Insert near the top of the hero copy, after the main description if present.
       const firstP = hero.querySelector('p');
@@ -746,8 +583,8 @@ window.addEventListener('DOMContentLoaded', () => {
     const heroP = document.querySelector('.page-home .hero .heroCopy p');
     if (heroP) {
       const t = (heroP.textContent || '').trim();
-      if (t === 'הבית שלך לקניות אשר לא נוסו על בעלי חיים — חיפוש מוצרים, בודק רכיבים ולוח מבצעים') {
-        heroP.textContent = 'המדריך לקניות 100% טבעוניות ושלא נוסו על בעלי חיים — מוצרים, מותגים, בודק רכיבים ולוח מבצעים.';
+      if (t === 'הבית שלך לקניות לקנות ללא אכזריות בבעלי חיים — חיפוש מוצרים, בודק רכיבים ולוח מבצעים') {
+        heroP.textContent = 'המדריך לקניות 100% טבעוניות וללא ניסויים בבעלי חיים — מוצרים, מותגים, בודק רכיבים ולוח מבצעים.';
       }
     }
   } catch(e) {}

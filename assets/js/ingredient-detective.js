@@ -1,263 +1,160 @@
-/* KBWG Ingredient Detective — JSON-backed (v30)
-   Loads ingredients from assets/data/ingredient-db.json and matches by keys.
-*/
 (function () {
-  'use strict';
+  const input = document.getElementById('qIng');
+  const out = document.getElementById('out');
+  const hint = document.getElementById('hint');
+  const sugs = document.getElementById('sugs');
 
-  const BUILD = '2026-02-02-v30';
-  console.log('[KBWG] Ingredient Detective build', BUILD);
+  if (!input || !out || !hint || !sugs) return;
 
-  const DB_URL = `assets/data/ingredient-db.json?v=${encodeURIComponent(BUILD)}`;
+  // Canonical ingredient list (keys can include English/Hebrew aliases)
+  const DB = [
+    {
+      name: 'Lanolin',
+      he: 'לנולין',
+      keys: ['lanolin', 'לנולין'],
+      status: 'רכיב מן החי',
+      why: 'לנולין מופק מצמר כבשים (שומן/שעווה טבעית). אם את מעדיפה להימנע — חפשי חלופות צמחיות או סינתטיות.'
+    },
+    {
+      name: 'Carmine',
+      he: 'קרמין',
+      keys: ['carmine', 'cochineal', 'קרמין', 'קוכיניל'],
+      status: 'רכיב מן החי',
+      why: 'קרמין (E120) מופק מחרק הקוכיניל ונמצא לעיתים באיפור ומזון.',
+      alt: 'חלופות נפוצות: iron oxides, red lake, beet extract.'
+    },
+    {
+      name: 'Glycerin',
+      he: 'גליצרין',
+      keys: ['glycerin', 'גליצרין', 'glycerol'],
+      status: 'תלוי מקור',
+      why: 'גליצרין יכול להיות ממקור צמחי או מן החי. לרוב בתמרוקים הוא צמחי אבל לא תמיד מצוין.',
+      alt: 'אם חשוב לך — חפשי “vegetable glycerin” או שאלי את המותג.'
+    },
+    {
+      name: 'Squalene / Squalane',
+      he: 'סקוואלן / סקוואלן',
+      keys: ['squalene', 'squalane', 'סקוואלן', 'סקוואלן'],
+      status: 'תלוי מקור',
+      why: 'יכול להגיע מכריש (פחות נפוץ היום) או ממקור צמחי (קנה סוכר/זית).',
+      alt: 'חפשי “plant-derived squalane”.'
+    }
+  ];
 
-  // ----- utils
-  const uniq = (arr) => Array.from(new Set((arr || []).filter(Boolean)));
-
-  function normalize(s) {
+  function norm(s) {
     return (s || '')
       .toString()
+      .trim()
       .toLowerCase()
-      .normalize('NFKD')
-      .replace(/[\u0300-\u036f]/g, '')     // diacritics
-      .replace(/[’'"`]/g, '')             // quotes
-      .replace(/\u200f/g, ' ')            // RTL marks
-      .replace(/\s+/g, ' ')
-      .trim();
+      .replace(/["'`.,:;()\[\]{}<>!?]+/g, '')
+      .replace(/\s+/g, ' ');
   }
 
-  function splitIngredients(raw) {
-    if (!raw) return [];
-    return uniq(
-      raw
-        .replace(/[\(\)\[\]\{\}]/g, ' ')
-        .split(/[,;\n\r\/\|]+/g)
-        .map((x) => x.trim())
-        .filter(Boolean)
-    );
+  function displayName(item) {
+    const parts = [];
+    if (item.name) parts.push(item.name);
+    if (item.he) parts.push(item.he);
+    return parts.join(' · ');
   }
 
-  function escapeHtml(s) {
-    return (s || '').replace(/[&<>"']/g, (c) => ({
-      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-    }[c]));
+  function clearUI() {
+    out.innerHTML = '';
+    sugs.innerHTML = '';
   }
 
-  // ----- db
-  let DB = [];
-  let DB_READY = false;
+  function renderHint(text) {
+    hint.textContent = text;
+  }
 
-  function indexDb(list) {
-    const out = [];
-    (list || []).forEach((e) => {
-      if (!e || !e.name || !Array.isArray(e.keys) || !e.status) return;
-      const keysNorm = uniq(e.keys.map(normalize)).filter(Boolean);
-      out.push({
-        name: e.name,
-        he: e.he || '',
-        keys: e.keys,
-        status: e.status,
-        why: e.why || '',
-        _name: normalize(e.name),
-        _he: normalize(e.he || ''),
-        _keys: keysNorm
+  function renderSuggestions(matches) {
+    sugs.innerHTML = '';
+    matches.slice(0, 12).forEach((m) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'sugBtn';
+      btn.textContent = displayName(m.item);
+      btn.addEventListener('click', () => {
+        // Fill with canonical English name if exists, otherwise first key
+        input.value = (m.item.name || m.item.keys[0] || '').toString();
+        showDetails(m.item);
       });
+      sugs.appendChild(btn);
     });
-    return out;
   }
 
-  async function loadDb() {
-    try {
-      const res = await fetch(DB_URL, { cache: 'no-store' });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = await res.json();
-      const list = Array.isArray(json) ? json : (json.ingredients || []);
-      DB = indexDb(list);
-      DB_READY = true;
-      console.log('[KBWG] ingredient DB loaded:', DB.length);
-    } catch (e) {
-      DB = [];
-      DB_READY = false;
-      console.warn('[KBWG] ingredient DB load failed:', e);
-    }
-  }
-
-  // ----- matching
-  function matchOne(token) {
-    const t = normalize(token);
-    if (!t || !DB_READY) return null;
-
-    let best = null;
-    let bestScore = 0;
-
-    for (const entry of DB) {
-      for (const k of entry._keys) {
-        if (!k) continue;
-
-        let ok = false;
-        // very short keys must match exactly (avoid accidental matches like "mel", "cera")
-        if (k.length < 5) ok = (t === k);
-        else ok = t.includes(k) || k.includes(t);
-
-        if (!ok) continue;
-
-        const score = Math.min(k.length, t.length);
-        if (score > bestScore) {
-          bestScore = score;
-          best = entry;
-        }
-      }
-    }
-    return best;
-  }
-
-  function searchDb(query) {
-    const q = normalize(query);
-    if (!q || !DB_READY) return [];
-    const results = [];
-    for (const entry of DB) {
-      if (entry._name.includes(q) || entry._he.includes(q) || entry._keys.some((k) => k.includes(q))) {
-        results.push(entry);
-      }
-    }
-    return results.slice(0, 12);
-  }
-
-  function statusChip(status) {
-    // Keep the UI simple — status is already Hebrew
-    return `<span class="small" style="font-weight:800;opacity:.85">${escapeHtml(status)}</span>`;
-  }
-
-  function cardHTML(entry) {
-    return `
-      <div class="resultCard">
-        <h3 style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin:0 0 6px">
-          <span>${escapeHtml(entry.name)}</span>
-          ${entry.he ? `<span class="small" style="opacity:.85">${escapeHtml(entry.he)}</span>` : ''}
-        </h3>
-        <div class="small" style="margin:0 0 6px">${statusChip(entry.status)}</div>
-        ${entry.why ? `<p style="margin:0;color:#334155">${escapeHtml(entry.why)}</p>` : ''}
-      </div>
+  function showDetails(item) {
+    sugs.innerHTML = '';
+    renderHint('');
+    out.innerHTML = `
+      <article class="resultCard">
+        <h3>${displayName(item)}</h3>
+        <p><strong>סטטוס:</strong> ${item.status || ''}</p>
+        ${item.why ? `<p>${item.why}</p>` : ''}
+        ${item.alt ? `<p><strong>חלופות:</strong> ${item.alt}</p>` : ''}
+      </article>
     `;
   }
 
-  function noteBoxHTML(html) {
-    return `<div class="noteBox">${html}</div>`;
-  }
+  function findMatches(q) {
+    const nq = norm(q);
+    if (!nq) return [];
 
-  // ----- UI
-  function initUI() {
-    const qInput = document.getElementById('qIng');
-    const sugs = document.getElementById('sugs');
-    const out = document.getElementById('out');
-    const hint = document.getElementById('hint');
+    const scored = [];
+    for (const item of DB) {
+      const keys = (item.keys || []).map(norm).filter(Boolean);
 
-    const togglePaste = document.getElementById('togglePaste');
-    const pasteBlock = document.getElementById('pasteBlock');
-    const pasteIng = document.getElementById('pasteIng');
-    const runPaste = document.getElementById('runPaste');
-
-    if (!qInput || !sugs || !out) return;
-
-    const clearSugs = () => { sugs.innerHTML = ''; };
-
-    const showSugs = (items) => {
-      if (!items.length) { clearSugs(); return; }
-      sugs.innerHTML = items.map((e, i) => `
-        <button type="button" class="sugBtn" data-i="${i}" title="${escapeHtml(e.name)}">
-          ${escapeHtml(e.name)} ${e.he ? `· ${escapeHtml(e.he)}` : ''}
-        </button>
-      `).join('');
-
-      sugs.querySelectorAll('button.sugBtn').forEach((btn) => {
-        btn.addEventListener('click', () => {
-          const idx = Number(btn.getAttribute('data-i'));
-          const entry = items[idx];
-          if (!entry) return;
-          qInput.value = entry.name;
-          clearSugs();
-          if (hint) hint.textContent = '';
-          out.innerHTML = cardHTML(entry);
-        });
-      });
-    };
-
-    qInput.addEventListener('input', () => {
-      const q = (qInput.value || '').trim();
-      if (!DB_READY) {
-        out.innerHTML = noteBoxHTML('המאגר עדיין נטען… נסי שוב עוד רגע.');
-        clearSugs();
-        return;
+      let best = Infinity;
+      for (const k of keys) {
+        if (!k) continue;
+        if (k === nq) best = Math.min(best, 0);
+        else if (k.startsWith(nq)) best = Math.min(best, 1);
+        else if (k.includes(nq)) best = Math.min(best, 2);
       }
-      if (q.length < 2) {
-        clearSugs();
-        if (hint) hint.textContent = '';
-        return;
-      }
-      const items = searchDb(q);
-      showSugs(items);
-      if (hint) hint.textContent = items.length ? `נמצאו ${items.length} הצעות` : 'לא נמצאו הצעות';
-    });
-
-    document.addEventListener('click', (e) => {
-      if (e.target !== qInput && !sugs.contains(e.target)) clearSugs();
-    });
-
-    // Paste mode
-    if (togglePaste && pasteBlock) {
-      pasteBlock.style.display = 'none';
-      togglePaste.addEventListener('click', () => {
-        const isHidden = pasteBlock.style.display === 'none';
-        pasteBlock.style.display = isHidden ? '' : 'none';
-        togglePaste.textContent = isHidden ? 'הסתר' : 'הדבק רשימת רכיבים (INCI)';
-      });
+      if (best !== Infinity) scored.push({ item, score: best });
     }
 
-    if (runPaste && pasteIng) {
-      runPaste.addEventListener('click', () => {
-        if (!DB_READY) {
-          out.innerHTML = noteBoxHTML('המאגר עדיין נטען… נסי שוב עוד רגע.');
-          return;
-        }
-
-        const tokens = splitIngredients(pasteIng.value);
-        if (!tokens.length) {
-          out.innerHTML = noteBoxHTML('לא זוהו רכיבים בטקסט שהדבקת.');
-          return;
-        }
-
-        const found = [];
-        const unknown = [];
-        const seen = new Set();
-
-        tokens.forEach((t) => {
-          const m = matchOne(t);
-          if (m) {
-            if (!seen.has(m.name)) {
-              found.push(m);
-              seen.add(m.name);
-            }
-          } else {
-            unknown.push(t);
-          }
-        });
-
-        const order = { 'רכיב מן החי': 0, 'תלוי מקור': 1, 'טבעוני': 2 };
-        found.sort((a, b) => (order[a.status] ?? 99) - (order[b.status] ?? 99) || a.name.localeCompare(b.name));
-
-        const cards = found.length
-          ? `<div class="resultGrid">${found.map(cardHTML).join('')}</div>`
-          : noteBoxHTML('לא נמצאו התאמות במאגר.');
-
-        const unknownBox = unknown.length
-          ? noteBoxHTML(`<details><summary>לא נמצאו במאגר (${unknown.length})</summary><div class="small" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px">${unknown.map((x)=>`<span style="background:rgba(15,23,42,.06);border-radius:999px;padding:6px 10px">${escapeHtml(x)}</span>`).join('')}</div></details>`)
-          : '';
-
-        out.innerHTML = cards + unknownBox;
-      });
-    }
+    scored.sort((a, b) => a.score - b.score || displayName(a.item).localeCompare(displayName(b.item)));
+    return scored;
   }
 
-  document.addEventListener('DOMContentLoaded', async () => {
-    await loadDb();
-    initUI();
-  });
+  function onInput() {
+    const raw = input.value || '';
+    const q = norm(raw);
+
+    // < 2 chars: don't search; show prompt
+    if (q.length < 2) {
+      clearUI();
+      renderHint('הזינו שתי אותיות לפחות להתחיל');
+      return;
+    }
+
+    const matches = findMatches(q);
+
+    if (!matches.length) {
+      clearUI();
+      renderHint('לא נמצאו תוצאות');
+      return;
+    }
+
+    // If exact match to a key OR exact match to canonical name -> show details.
+    const exact = matches.find((m) => {
+      const nq = norm(raw);
+      return (m.item.keys || []).some((k) => norm(k) === nq) || (m.item.name && norm(m.item.name) === nq);
+    });
+
+    if (exact) {
+      showDetails(exact.item);
+      return;
+    }
+
+    // Otherwise show suggestions with full ingredient names (so "lan" won't look like ingredient name)
+    out.innerHTML = '';
+    renderHint('בחרי רכיב מהרשימה');
+    renderSuggestions(matches);
+  }
+
+  input.addEventListener('input', onInput);
+  // Initial
+  clearUI();
+  renderHint('הזינו שתי אותיות לפחות להתחיל');
 })();
