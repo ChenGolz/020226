@@ -1,12 +1,80 @@
-// Build: 2026-01-28-v3
+// Build: 2026-02-02-v21
 // Renders "Today's Top Deals" from data/products.json by selecting products where isDiscounted === true.
-// Also enriches with brand badges (PETA / Leaping Bunny / Vegan) + price tier from data/intl-brands.json when available.
+// Enriches badge flags from data/intl-brands.json when available.
+// Matches the "Products" page UI badges (tags + meta pills) but does NOT show the price-range/tier UI.
 (function () {
   'use strict';
 
   // --- Config ---
   var AMAZON_TAG = 'nocrueltyil-20'; // used only if a link is missing a tag=
   var MAX_DEALS = 60;
+
+  // Pagination (v10)
+  var KB_PAGE = 1;
+  var KB_PER = 0;
+  var KB_DEALS = [];
+  var KB_PAGER = null;
+
+  function kbPerPage(kind){
+    var w = window.innerWidth || 1024;
+    if(kind === 'posts'){ return w <= 640 ? 6 : (w <= 1024 ? 9 : 12); }
+    if(kind === 'bundles'){ return w <= 640 ? 4 : (w <= 1024 ? 6 : 8); }
+    if(kind === 'picker'){ return w <= 640 ? 10 : (w <= 1024 ? 14 : 18); }
+    if(kind === 'places'){ return w <= 640 ? 10 : (w <= 1024 ? 14 : 16); }
+    if(kind === 'deals'){ return w <= 640 ? 12 : (w <= 1024 ? 18 : 24); }
+    if(kind === 'brands'){ return w <= 640 ? 12 : (w <= 1024 ? 18 : 24); }
+    if(kind === 'hg'){ return w <= 640 ? 3 : (w <= 1024 ? 5 : 8); } // groups per page
+    // default grid
+    return w <= 640 ? 12 : (w <= 1024 ? 18 : 24);
+  }
+
+  function kbEnsurePager(afterEl, id){
+    if(!afterEl) return null;
+    var ex = document.getElementById(id);
+    if(ex) return ex;
+    var wrap = document.createElement('div');
+    wrap.className = 'kbPager';
+    wrap.id = id;
+    afterEl.insertAdjacentElement('afterend', wrap);
+    return wrap;
+  }
+
+  function kbRenderPager(pagerEl, page, totalItems, perPage, onPage){
+    if(!pagerEl) return;
+    var totalPages = Math.max(1, Math.ceil(totalItems / perPage));
+    // show pager only when it actually saves work (2+ pages)
+    if(totalPages <= 1){
+      pagerEl.innerHTML = '';
+      pagerEl.style.display = 'none';
+      return;
+    }
+    pagerEl.style.display = 'flex';
+
+    // clamp
+    if(page < 1) page = 1;
+    if(page > totalPages) page = totalPages;
+
+    var prevDisabled = page <= 1;
+    var nextDisabled = page >= totalPages;
+
+    pagerEl.innerHTML = ''
+      + '<button class="btnSmall btnGhost" type="button" ' + (prevDisabled ? 'disabled aria-disabled="true"' : '') + ' data-kbprev>הקודם</button>'
+      + '<span class="kbPagerInfo">עמוד ' + page + ' מתוך ' + totalPages + '</span>'
+      + '<button class="btnSmall btnGhost" type="button" ' + (nextDisabled ? 'disabled aria-disabled="true"' : '') + ' data-kbnext>הבא</button>';
+
+    var prevBtn = pagerEl.querySelector('[data-kbprev]');
+    var nextBtn = pagerEl.querySelector('[data-kbnext]');
+    if(prevBtn) prevBtn.onclick = function(){ if(page>1) onPage(page-1); };
+    if(nextBtn) nextBtn.onclick = function(){ if(page<totalPages) onPage(page+1); };
+  }
+
+  function kbRangeText(page, totalItems, perPage){
+    if(!totalItems) return 'אין תוצאות';
+    var start = (page-1)*perPage + 1;
+    var end = Math.min(totalItems, page*perPage);
+    return 'מציגים ' + start + '–' + end + ' מתוך ' + totalItems;
+  }
+
 
   // Ensure the image area renders nicely even if your global CSS doesn't style it yet.
   (function injectDealMediaStyles() {
@@ -18,7 +86,9 @@
       '.dealMedia{display:block;overflow:hidden;border-radius:14px;}',
       '.dealImg{display:block;width:100%;height:auto;aspect-ratio:1/1;object-fit:cover;}',
       '.dealPlaceholder{display:flex;align-items:center;justify-content:center;aspect-ratio:1/1;font-size:34px;}',
-      '.dealCard .dealTop{margin-top:10px;}'
+      '.dealCard .dealTop{margin-top:10px;}',
+      '.dealCard .pMeta.dealPills{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;}',
+      '.dealMeta.tags{margin-top:10px;}'
     ].join('');
     document.head.appendChild(style);
   })();
@@ -103,16 +173,108 @@
       .replace(/[^a-z0-9]+/g, '');
   }
 
-  function makeBrandLogo(name) {
-    var n = safeText(name).trim();
-    if (!n) return '';
-    // Split to words (keep letters/numbers only)
-    var words = n.split(/\s+/).filter(Boolean);
-    if (words.length >= 2) {
-      return (words[0].charAt(0) + words[1].charAt(0)).toUpperCase();
+  // --- Category + meta helpers (match products page) ---
+  var CAT_ALIASES = { fragrances: 'fragrance', perfume: 'fragrance', perfumes: 'fragrance', frag: 'fragrance' };
+  function normCat(v) {
+    var s = safeText(v).trim().toLowerCase();
+    return CAT_ALIASES[s] || s;
+  }
+  function getCatsRaw(p) {
+    if (p && Array.isArray(p.categories)) return p.categories.map(normCat).filter(Boolean);
+    if (p && p.category != null) return [normCat(p.category)].filter(Boolean);
+    if (p && p.cat != null) return [normCat(p.cat)].filter(Boolean);
+    return [];
+  }
+
+  var CATEGORY_LABELS = {
+    face: 'פנים',
+    hair: 'שיער',
+    body: 'גוף',
+    makeup: 'איפור',
+    fragrance: 'בישום',
+    sun: 'שמש',
+    teeth: 'שיניים',
+    baby: 'ילדים',
+    'mens-care': 'גברים'
+  };
+  var CATEGORY_PRIORITY = ['makeup','hair','body','sun','teeth','fragrance','baby','mens-care','face'];
+  var CATEGORY_SYNONYMS = {
+    skincare: 'face',
+    cleanser: 'face',
+    clean: 'face',
+    facewash: 'face',
+    face_wash: 'face',
+    soap: 'body',
+    suncare: 'sun',
+    spf: 'sun',
+    oral: 'teeth',
+    dental: 'teeth'
+  };
+
+  function getPrimaryCategoryKey(p) {
+    var cats = getCatsRaw(p);
+    if (!cats.length) return '';
+    var normed = cats.map(function (c) { return CATEGORY_SYNONYMS[c] || c; }).filter(Boolean);
+    for (var i = 0; i < CATEGORY_PRIORITY.length; i++) {
+      if (normed.indexOf(CATEGORY_PRIORITY[i]) !== -1) return CATEGORY_PRIORITY[i];
     }
-    // Single word: first 2 chars
-    return n.replace(/[^A-Za-z0-9]/g, '').slice(0, 2).toUpperCase();
+    if (normed.indexOf('body') !== -1) return 'body';
+    if (normed.indexOf('face') !== -1) return 'face';
+    return '';
+  }
+
+  function getCategoryLabelFromProduct(p) {
+    if (p && p.categoryLabel && p.categoryLabel !== 'אחר') return p.categoryLabel;
+    var key = getPrimaryCategoryKey(p);
+    return key ? (CATEGORY_LABELS[key] || '') : '';
+  }
+
+  function getOfferWithMinFreeShip(p) {
+    var offers = (p && Array.isArray(p.offers)) ? p.offers : [];
+    var best = null;
+    for (var i = 0; i < offers.length; i++) {
+      var o = offers[i];
+      var v = (o && typeof o.freeShipOver === 'number' && isFinite(o.freeShipOver)) ? o.freeShipOver : null;
+      if (v == null) continue;
+      if (!best || v < best.freeShipOver) best = o;
+    }
+    return best;
+  }
+
+  function formatFreeShipText(o) {
+    if (!o || o.freeShipOver == null || !isFinite(o.freeShipOver)) return '';
+    var usd = o.freeShipOver;
+    var ILS_PER_USD = 3.27;
+    var ilsApprox = Math.round((usd * ILS_PER_USD) / 5) * 5;
+    return 'משלוח חינם לישראל מעל ' + ilsApprox + ' ש"ח';
+  }
+
+  function formatSizeForIsrael(rawSize) {
+    var original = safeText(rawSize).trim();
+    if (!original) return '';
+    var lower = original.toLowerCase();
+
+    if (
+      lower.indexOf('ml') !== -1 ||
+      lower.indexOf('מ"ל') !== -1 ||
+      lower.indexOf('מ״ל') !== -1 ||
+      lower.indexOf('גרם') !== -1 ||
+      (/\bg\b/.test(lower))
+    ) {
+      return original;
+    }
+
+    var ozMatch = lower.match(/(\d+(?:\.\d+)?)\s*(fl\.?\s*)?oz/);
+    if (ozMatch) {
+      var qty = parseFloat(ozMatch[1]);
+      if (!isNaN(qty)) {
+        var ml = qty * 29.5735;
+        var rounded = Math.round(ml / 5) * 5;
+        return rounded + ' מ״ל';
+      }
+    }
+
+    return original;
   }
 
   function formatMoney(amount, currency) {
@@ -166,73 +328,113 @@
   }
 
   function resolveLabels(p, brand) {
-    // Product-level overrides win (including explicit false)
-    function getFlag(key, brandDefault) {
-      if (hasOwn(p, key)) return !!p[key];
-      return !!brandDefault;
+    // Match Products page behavior, but also support legacy keys and array badges.
+    // Rules:
+    // - If product explicitly sets a flag (true/false) via isVegan/isLB/isPeta or legacy keys, that wins.
+    // - Else, inherit from intl-brands.json (brand.badges + brand.vegan).
+    // - If brand not found and no product flags, default is no badges.
+
+    function isSet(obj, key) {
+      return hasOwn(obj, key) && obj[key] !== null && obj[key] !== undefined;
     }
 
-    var badges = (brand && Array.isArray(brand.badges)) ? brand.badges : [];
+    function arrayHas(arr, needleLower) {
+      if (!Array.isArray(arr)) return false;
+      for (var i = 0; i < arr.length; i++) {
+        if (safeText(arr[i]).toLowerCase() === needleLower) return true;
+      }
+      return false;
+    }
+
+    function getBoolFromProduct(keys, badgeNeedles) {
+      // keys: explicit boolean keys (support explicit false)
+      for (var i = 0; i < keys.length; i++) {
+        var k = keys[i];
+        if (isSet(p, k)) return !!p[k];
+      }
+      // badges array on product (infer)
+      if (badgeNeedles && badgeNeedles.length) {
+        for (var j = 0; j < badgeNeedles.length; j++) {
+          if (arrayHas(p && p.badges, badgeNeedles[j])) return true;
+        }
+      }
+      return undefined; // not set
+    }
+
+    // Brand defaults
+    var brandBadges = (brand && Array.isArray(brand.badges)) ? brand.badges : [];
     var badgeSet = {};
-    for (var i = 0; i < badges.length; i++) badgeSet[safeText(badges[i]).toLowerCase()] = true;
+    for (var b = 0; b < brandBadges.length; b++) badgeSet[safeText(brandBadges[b]).toLowerCase()] = true;
 
     var brandIsVegan = !!(brand && (brand.vegan === true || badgeSet['vegan']));
     var brandIsLB = !!(brand && (badgeSet['leaping bunny'] || badgeSet['leapingbunny']));
     var brandIsPeta = !!(brand && badgeSet['peta']);
 
+    // Product overrides (support legacy keys + product.badges)
+    var prodVegan = getBoolFromProduct(['isVegan', 'vegan'], ['vegan']);
+    var prodLB = getBoolFromProduct(['isLB', 'lb', 'isLeapingBunny'], ['leaping bunny', 'leapingbunny']);
+    var prodPeta = getBoolFromProduct(['isPeta', 'peta'], ['peta']);
+
     return {
-      isVegan: getFlag('isVegan', brandIsVegan),
-      isLB: getFlag('isLB', brandIsLB),
-      isPeta: getFlag('isPeta', brandIsPeta)
+      isVegan: (prodVegan !== undefined) ? prodVegan : brandIsVegan,
+      isLB: (prodLB !== undefined) ? prodLB : brandIsLB,
+      isPeta: (prodPeta !== undefined) ? prodPeta : brandIsPeta
     };
   }
 
-  function resolvePriceTier(p, brand) {
-    // Prefer brand tier; else a light heuristic from price range
-    var tier = (brand && typeof brand.priceTier === 'number') ? brand.priceTier : null;
-    if (tier != null && isFinite(tier)) {
-      tier = Math.max(1, Math.min(5, Math.round(tier)));
-      return tier;
+
+  // --- Meta pills (match products page) ---
+  function getOfferWithMinFreeShip(p) {
+    if (!p || !Array.isArray(p.offers)) return null;
+    var best = null;
+    for (var i = 0; i < p.offers.length; i++) {
+      var o = p.offers[i];
+      var v = (o && typeof o.freeShipOver === 'number' && isFinite(o.freeShipOver)) ? o.freeShipOver : null;
+      if (v == null) continue;
+      if (!best || v < best.freeShipOver) best = o;
     }
-
-    var min = (typeof p.priceMin === 'number' && isFinite(p.priceMin)) ? p.priceMin : null;
-    var max = (typeof p.priceMax === 'number' && isFinite(p.priceMax)) ? p.priceMax : null;
-    var base = (min != null) ? min : max;
-
-    if (base == null) return null;
-    // Price tiers tuned for Amazon beauty ranges; adjust any time.
-    if (base <= 12) return 1;
-    if (base <= 25) return 2;
-    if (base <= 45) return 3;
-    if (base <= 80) return 4;
-    return 5;
+    return best;
   }
 
-  function renderPriceTier(tier) {
-    if (!tier) return '';
-    var t = Math.max(1, Math.min(5, Math.round(tier)));
-    var dollars = '';
-    for (var i = 1; i <= 5; i++) {
-      dollars += '<span class="dollar' + (i <= t ? '' : ' inactive') + '">$</span>';
-    }
-    return (
-      '<span aria-label="רמת מחיר: ' + t + ' מתוך 5" class="price-tier price-tier--t' + t + ' price-tier--sm">' +
-        dollars +
-      '</span>'
-    );
+  function formatFreeShipText(o) {
+    if (!o || o.freeShipOver == null || !isFinite(o.freeShipOver)) return '';
+    var usd = o.freeShipOver;
+    var ILS_PER_USD = 3.27;
+    var ilsApprox = Math.round((usd * ILS_PER_USD) / 5) * 5;
+    return 'משלוח חינם לישראל מעל ' + ilsApprox + ' ש"ח';
   }
 
-  function buildTags(labels) {
+  function formatSizeForIsrael(rawSize) {
+    var original = safeText(rawSize).trim();
+    if (!original) return '';
+    var lower = original.toLowerCase();
+    if (lower.indexOf('ml') !== -1 || lower.indexOf('מ"ל') !== -1 || lower.indexOf('מ״ל') !== -1 || lower.indexOf('גרם') !== -1 || /\bg\b/.test(lower)) {
+      return original;
+    }
+    var m = lower.match(/(\d+(?:\.\d+)?)\s*(fl\.?\s*)?oz/);
+    if (m) {
+      var qty = parseFloat(m[1]);
+      if (!isNaN(qty)) {
+        var ml = qty * 29.5735;
+        var rounded = Math.round(ml / 5) * 5;
+        return rounded + ' מ״ל';
+      }
+    }
+    return original;
+  }
+
+  function buildTags(p, labels) {
     var out = [];
-    if (labels.isPeta) out.push('<span class="tag wg-notranslate" data-wg-notranslate="true">PETA</span>');
+    // Match Products page tag labels + Weglot behavior
     if (labels.isLB) out.push('<span class="tag wg-notranslate" data-wg-notranslate="true">Leaping Bunny</span>');
+    if (labels.isPeta) out.push('<span class="tag wg-notranslate" data-wg-notranslate="true">PETA</span>');
     if (labels.isVegan) out.push('<span class="tag">טבעוני</span>');
+    if (p && p.isIsrael) out.push('<span class="tag">אתר ישראלי</span>');
     return out.join('');
   }
 
   function dealCardHTML(p, brand) {
     var brandName = safeText(p.brand);
-    var brandDisplay = brandName ? brandName.toUpperCase() : '';
 
     var offer = pickBestOffer(p) || {};
     var url = ensureAmazonTag(safeText(offer.url || ''));
@@ -245,6 +447,17 @@
 
     var labels = resolveLabels(p, brand);
 
+    // Meta pills like products page (category / size / free ship)
+    var pills = [];
+    var catLabel = getCategoryLabelFromProduct(p);
+    if (catLabel) pills.push('<span class="pMetaPill">' + esc(catLabel) + '</span>');
+    var sizeText = formatSizeForIsrael(p && p.size);
+    if (sizeText) pills.push('<span class="pMetaPill">' + esc(sizeText) + '</span>');
+    var fsOffer = getOfferWithMinFreeShip(p);
+    var fsText = formatFreeShipText(fsOffer);
+    if (fsText) pills.push('<span class="pMetaPill pMetaPill--freeShip">' + esc(fsText) + '</span>');
+    var pillsHtml = pills.length ? ('<div class="pMeta dealPills">' + pills.join('') + '</div>') : '';
+
     return (
       '<article class="dealCard">' +
         // Image (clickable)
@@ -255,14 +468,15 @@
           ) +
         '</a>' +
         '<div class="dealTop">' +
-        '<div class="dealBrandRow">' +
-          '<div>' +
-            '<div class="dealBrand">' + esc(brandDisplay) + '</div>' +
-            '<div class="dealName">' + esc(safeText(p.name)) + '</div>' +
+          '<div class="dealBrandRow">' +
+            '<div>' +
+              '<div class="dealBrand wg-notranslate" data-wg-notranslate="true">' + esc(brandName) + '</div>' +
+              '<div class="dealName">' + esc(safeText(p.name)) + '</div>' +
+              pillsHtml +
+            '</div>' +
           '</div>' +
         '</div>' +
-      '</div>' +
-      '<div class="dealMeta">' + buildTags(labels) + '</div>' +
+        '<div class="dealMeta tags">' + buildTags(p, labels) + '</div>' +
         '<div class="dealCta">' +
           '<div class="dealPrice">' + esc(formatMoney(price, currency) || '') + '</div>' +
           (url
@@ -294,8 +508,8 @@
     setLoading(true);
     showEmpty(false);
 
-    var productsPath = resolveFromBase('data/products.json');
-    var brandsPath = resolveFromBase('data/intl-brands.json');
+    var productsPath = resolveFromBase('data/products.json?v=2026-02-02-v21');
+    var brandsPath = resolveFromBase('data/intl-brands.json?v=2026-02-02-v21');
 
     var productsReq = fetch(productsPath, { cache: 'no-store' }).then(function (r) {
       if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -328,6 +542,31 @@
         // Keep the list stable (in JSON order), but cap size.
         deals = deals.slice(0, MAX_DEALS);
 
+        KB_DEALS = deals;
+        KB_PAGE = 1;
+
+        function renderDealsPage() {
+          KB_PER = kbPerPage('deals');
+          if (!KB_PAGER) KB_PAGER = kbEnsurePager(grid, 'dealsPager');
+          kbRenderPager(KB_PAGER, KB_PAGE, KB_DEALS.length, KB_PER, function (n) { KB_PAGE = n; renderDealsPage(); });
+
+          var start = (KB_PAGE - 1) * KB_PER;
+          var end = start + KB_PER;
+          var pageItems = (KB_DEALS.length > KB_PER) ? KB_DEALS.slice(start, end) : KB_DEALS;
+
+          var htmlOut = '';
+          for (var jj = 0; jj < pageItems.length; jj++) {
+            var pp = pageItems[jj];
+            var bb = brandsByKey[brandKey(pp.brand)] || null;
+            htmlOut += dealCardHTML(pp, bb);
+          }
+
+          grid.innerHTML = htmlOut;
+          setLoading(false);
+          showEmpty(false);
+          try { window.dispatchEvent(new Event('kbwg:content-rendered')); } catch (e) {}
+        }
+
         if (!deals.length) {
           grid.innerHTML = '';
           setLoading(false);
@@ -350,20 +589,8 @@
           return;
         }
 
-        var htmlOut = '';
-        for (var j = 0; j < deals.length; j++) {
-          var p = deals[j];
-          var b = brandsByKey[brandKey(p.brand)] || null;
-          htmlOut += dealCardHTML(p, b);
-        }
-
-        grid.innerHTML = htmlOut;
-        setLoading(false);
-        showEmpty(false);
-
-        // Let Weglot refresh (optional)
-        try { window.dispatchEvent(new Event('kbwg:content-rendered')); } catch (e) {}
-      })
+        renderDealsPage();
+})
       .catch(function (err) {
         console.warn('[todays-deals] Could not render deals', err);
         setLoading(false);
