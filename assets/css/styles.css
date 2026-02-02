@@ -54,18 +54,39 @@ h3{ font-size: 18px; margin:0 0 8px; }
   padding: 12px 0;
 }
 
-/* Header nav: show ALL items on desktop (wrap) */
+/* Header nav (desktop): keep everything on ONE row, next to the logo */
 .siteHeader .nav{ flex: 1 1 auto; }
 .siteHeader .logo{ flex: 0 0 auto; }
 
-/* Desktop: wrap so every item is visible */
 @media (min-width: 901px){
+  .headerRow{ flex-wrap: nowrap; }
   .siteHeader .nav{
-    flex-wrap: wrap;
-    white-space: normal;
-    overflow: visible;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    overflow: visible; /* keep dropdowns visible */
+    gap: 6px;
+  }
+  /* Slightly tighter pills so all top-level items fit */
+  #siteHeader .navGroup > summary{
+    padding: 6px 8px;
+    font-size: 13px;
   }
   .siteHeader .nav a{
+    font-size: 13px;
+    padding: 6px 8px;
+  }
+
+  /* Give the nav more room on smaller desktops */
+  .logo{ min-width: 0; }
+  @media (max-width: 1100px){
+    .logoText{ display:none; }
+    .logo{ min-width: 0; }
+  }
+}
+.siteHeader .nav a{
     flex: 0 0 auto;
     font-size: 13px;
     padding: 6px 9px;
@@ -1540,15 +1561,22 @@ body{ overflow-x: hidden; }
   .navDrawerClose:active{ transform: scale(.98); }
 
   /* Drawer links */
-.siteHeader .nav a{
-  background: rgba(42,91,154,.08);
-  border: 1px solid rgba(42,91,154,.12);
-  text-align: right; /* RTL */
-  padding: 10px 10px;
-  border-radius: 14px;
-}
+  .siteHeader .nav a{
+    background: rgba(42,91,154,.06);
+    border: 1px solid rgba(42,91,154,.12);
+    text-align: right;
+    padding: 6px 10px;
+    border-radius: 14px;
+  }
 
-.navOverlay{
+  .siteHeader .nav a{
+    background: rgba(42,91,154,.08);
+    border: 1px solid rgba(42,91,154,.12);
+    text-align: center;
+    padding: 6px 10px;
+  }
+
+  .navOverlay{
     position: fixed;
     inset: 0;
     background: rgba(10, 17, 31, .35);
@@ -4568,47 +4596,4 @@ input,button,select,textarea{ font-family: inherit; }
   /* extra safety: nav always on top inside the header stacking context */
   body.menuOpen .siteHeader .nav,
   body.menuopen .siteHeader .nav{ z-index: 2147483010 !important; }
-}
-/* =========================================================
-   MOBILE NAV LAYERING HOTFIX (2026-02-02)
-   Fixes cases where the drawer appears "behind" the page due to
-   header stacking contexts / later overrides.
-   ========================================================= */
-@media (max-width: 920px){
-  /* Remove stacking-context effects that can trap fixed children */
-  .siteHeader{
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    filter: none !important;
-    transform: none !important;
-    will-change: auto !important;
-  }
-
-  /* Keep header/nav above the overlay and the page */
-  body.menuOpen .siteHeader{ z-index: 2147483000 !important; }
-  body.menuOpen .siteHeader .nav{ z-index: 2147483010 !important; }
-  body.menuOpen .navOverlay{ z-index: 2147482990 !important; }
-
-  /* Ensure drawer layout stays vertical even if other CSS sets .nav to row */
-  .siteHeader .nav{ flex-direction: column !important; flex-wrap: nowrap !important; }
-}
-
-
-/* ==== Desktop top nav: centered + wraps so last tabs are always visible (v31) ==== */
-@media (min-width: 921px){
-  .siteHeader .headerRow{
-    flex-wrap: wrap;
-    align-items: center;
-  }
-  .siteHeader .nav{
-    flex: 1 1 100% !important;
-    order: 99;
-    justify-content: center !important;
-    flex-wrap: wrap !important;
-    white-space: normal !important;
-    overflow: visible !important;
-    padding: 6px 0 !important;
-    background: transparent !important;
-    border: 0 !important;
-  }
 }

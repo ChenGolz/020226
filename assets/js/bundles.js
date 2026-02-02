@@ -14,14 +14,6 @@
 (function(){
   'use strict';
 
-  // Resolve a relative asset/data path against the site base (works from /en/ too)
-function kbwgResolve(rel){
-  try{
-    if (typeof window.__kbwgResolveFromSiteBase === 'function') return window.__kbwgResolveFromSiteBase(rel);
-  }catch(e){}
-  return rel;
-}
-
   try { window.KBWG_BUNDLES_BUILD = '2026-02-01-v22-fixes'; console.info('[KBWG] Bundles build', window.KBWG_BUNDLES_BUILD); } catch(e) {}
 
   var PRODUCTS_PATH = 'data/products.json';
@@ -1437,19 +1429,7 @@ function kbwgResolve(rel){
     img.loading = 'lazy';
     img.alt = (p._brand ? (p._brand + ' ') : '') + (p._name || '');
     if(p._image) img.src = p._image;
-    // If assets are shared at the site root (e.g. pages under /en/), try the resolved URL once.
-    try{
-      var alt = kbwgResolve(p._image);
-      if(alt && alt !== p._image) img.dataset.altSrc = alt;
-    }catch(e){}
-    img.onerror = function(){
-      try{
-        var a = this.dataset.altSrc || '';
-        if(a && !this.dataset.triedAlt){ this.dataset.triedAlt='1'; this.src = a; return; }
-      }catch(e){}
-      this.onerror = null;
-      this.src = kbwgResolve('assets/img/products/placeholder.jpg');
-    };
+    img.onerror = function(){ this.onerror = null; this.src = 'assets/img/products/placeholder.jpg'; };
 
     var body = document.createElement('div');
 
@@ -1758,19 +1738,7 @@ function kbwgResolve(rel){
     img.loading = 'lazy';
     img.alt = (p._brand ? (p._brand + ' ') : '') + (p._name || '');
     if(p._image) img.src = p._image;
-    // If assets are shared at the site root (e.g. pages under /en/), try the resolved URL once.
-    try{
-      var alt = kbwgResolve(p._image);
-      if(alt && alt !== p._image) img.dataset.altSrc = alt;
-    }catch(e){}
-    img.onerror = function(){
-      try{
-        var a = this.dataset.altSrc || '';
-        if(a && !this.dataset.triedAlt){ this.dataset.triedAlt='1'; this.src = a; return; }
-      }catch(e){}
-      this.onerror = null;
-      this.src = kbwgResolve('assets/img/products/placeholder.jpg');
-    };
+    img.onerror = function(){ this.onerror = null; this.src = 'assets/img/products/placeholder.jpg'; };
 
     var body = document.createElement('div');
 
@@ -2398,19 +2366,7 @@ var img = document.createElement('img');
     img.loading = 'lazy';
     img.alt = (p._brand ? (p._brand + ' ') : '') + (p._name || '');
     if(p._image) img.src = p._image;
-    // If assets are shared at the site root (e.g. pages under /en/), try the resolved URL once.
-    try{
-      var alt = kbwgResolve(p._image);
-      if(alt && alt !== p._image) img.dataset.altSrc = alt;
-    }catch(e){}
-    img.onerror = function(){
-      try{
-        var a = this.dataset.altSrc || '';
-        if(a && !this.dataset.triedAlt){ this.dataset.triedAlt='1'; this.src = a; return; }
-      }catch(e){}
-      this.onerror = null;
-      this.src = kbwgResolve('assets/img/products/placeholder.jpg');
-    };
+    img.onerror = function(){ this.onerror = null; this.src = 'assets/img/products/placeholder.jpg'; };
 
     var body = document.createElement('div');
 

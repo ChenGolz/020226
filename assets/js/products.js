@@ -2,15 +2,6 @@
 (function () {
   const qs = (s) => document.querySelector(s);
 
-
-  // Resolve a relative asset/data path against the site base (works from /en/ too)
-  function kbwgResolve(rel){
-    try{
-      if (typeof window.__kbwgResolveFromSiteBase === 'function') return window.__kbwgResolveFromSiteBase(rel);
-    }catch(e){}
-    return rel;
-  }
-
   // Pagination helpers (v12) — keeps pages fast on mobile/iPad
   function kbPerPage(kind){
     var w = window.innerWidth || 1024;
@@ -1348,7 +1339,7 @@ function normalizeProduct(p) {
     var start = (page-1)*perPage;
     var end = Math.min(total, start + perPage);
     var pageItems = list.slice(start, end);
-    const frag = document.createDocumentFragment();
+const frag = document.createDocumentFragment();
 
     pageItems.forEach((p) => {
       const card = document.createElement("article");
@@ -1358,29 +1349,16 @@ function normalizeProduct(p) {
       media.className = "pMedia";
       if (p.image) {
         const img = document.createElement("img");
-        const primarySrc = p.image;
-        const altSrc = kbwgResolve(primarySrc);
-        img.src = primarySrc;
-        if (altSrc && altSrc !== primarySrc) img.dataset.altSrc = altSrc;
-
+        img.src = p.image;
         img.alt = p.name || "";
         img.loading = "lazy";
         img.decoding = "async";
         img.width = 640;
         img.height = 640;
-
-        // Try the resolver-based URL once (helps when page is under /en/ but assets are shared at ../assets)
+        // Avoid broken cards / console noise when an image is missing.
         img.onerror = function(){
-          try{
-            const a = this.dataset.altSrc || '';
-            if (a && !this.dataset.triedAlt){
-              this.dataset.triedAlt = '1';
-              this.src = a;
-              return;
-            }
-          }catch(e){}
           try{ this.onerror = null; }catch(e){}
-          this.src = kbwgResolve('assets/img/products/placeholder.jpg');
+          this.src = 'assets/img/products/placeholder.jpg';
         };
         media.appendChild(img);
       } else {
