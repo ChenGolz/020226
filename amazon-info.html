@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>קנייה מאמזון – מידע</title>
+<meta content="מידע קצר על קנייה מאמזון ארה״ב ואמזון אנגליה לישראל – משלוחים, מיסים והגדרות" name="description"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="assets/css/styles.css?v=2026-01-31-v17" rel="stylesheet"/>
+<link href="assets/img/logo.png" rel="icon" type="image/png"/>
+</head>
+<body>
+<header class="siteHeader" id="siteHeader">
+  <div class="wrap headerRow">
+    <a aria-label="דף הבית" class="logo" href="index.html">
+      <img alt="לקנות ללא אכזריות" class="logoImg" height="40" src="assets/img/logo.png" width="40"/>
+      <span class="logoText">לקנות ללא אכזריות</span>
+    </a>
+
+    <!-- Mobile hamburger (required for the drawer nav) -->
+    <button class="navToggle" type="button" aria-label="פתח תפריט" aria-expanded="false">
+      <span class="navToggleIcon" aria-hidden="true">☰</span>
+      <span class="navToggleText">תפריט</span>
+    </button>
+
+    <nav aria-label="ניווט ראשי" class="nav">
+<div class="navDrawerHeader" aria-label="כותרת תפריט">
+  <a class="navDrawerLogo" href="index.html">
+    <img alt="לקנות ללא אכזריות" class="navDrawerLogoImg" height="40" src="assets/img/logo.png" width="40"/>
+    <span class="navDrawerLogoText">לקנות ללא אכזריות</span>
+  </a>
+  <button class="navDrawerClose" type="button" aria-label="סגירת תפריט">×</button>
+</div>
+
+      <a href="index.html">דף הבית</a>
+
+      <details class="navGroup">
+        <summary>מוצרים מומלצים</summary>
+        <div class="navDrop" role="menu" aria-label="מוצרים מומלצים">
+          <a href="bundles.html" role="menuitem">מארזים משתלמים (Bundles)</a>
+          <a href="products.html" role="menuitem">מאגר מוצרים עם חיפוש</a>
+        </div>
+      </details>
+
+      <details class="navGroup">
+        <summary>מותגים מומלצים</summary>
+        <div class="navDrop" role="menu" aria-label="מותגים מומלצים">
+          <a href="recommended-brands.html" role="menuitem">מותגים מומלצים מחו״ל</a>
+          <a href="israeli-brands.html" role="menuitem">מותגים מומלצים בישראל</a>
+        </div>
+      </details>
+
+      <details class="navGroup">
+        <summary>דילים ומבצעים</summary>
+        <div class="navDrop" role="menu" aria-label="דילים ומבצעים">
+          <a href="todays-top-deals.html" role="menuitem">דילים חמים היום</a>
+          <a href="shopping-calendar.html" role="menuitem">לוח מבצעים וסיילים</a>
+        </div>
+      </details>
+
+      <details class="navGroup">
+        <summary>כלים לקנייה חכמה</summary>
+        <div class="navDrop" role="menu" aria-label="כלים לקנייה חכמה">
+          <a href="ingredient-detective.html" role="menuitem">בודק רכיבים ומה מתאים לך</a>
+          <a href="pharmacy.html" role="menuitem">מוצרים טבעוניים בפארם</a>
+          <a href="amazon-info.html" role="menuitem">איך קונים מחו״ל (אמזון)</a>
+        </div>
+      </details>
+
+      <details class="navGroup">
+        <summary>מדריכים ומפות</summary>
+        <div class="navDrop" role="menu" aria-label="מדריכים ומפות">
+          <a href="vegan-in-israel.html" role="menuitem">מדריך טבעוני בישראל</a>
+          <a href="hidden-gems-map.html" role="menuitem">מפת Hidden Gems</a>
+          <a href="learn.html" role="menuitem">מידע ושאלות נפוצות</a>
+        </div>
+      </details>
+
+      <details class="navGroup">
+        <summary>קהילה ועשייה טובה</summary>
+        <div class="navDrop" role="menu" aria-label="קהילה ועשייה טובה">
+          <a href="wall-of-kindness.html" role="menuitem">קיר הטוב (Wall of Kindness)</a>
+        </div>
+      </details>
+
+      <details class="navGroup">
+        <summary>אודות ועזרה</summary>
+        <div class="navDrop" role="menu" aria-label="אודות ועזרה">
+          <a href="methodology.html" role="menuitem">איך אנחנו בודקים (שיטה)</a>
+          <a href="about.html" role="menuitem">על האתר והחזון</a>
+          <a href="contact.html" role="menuitem">צור קשר ותיקונים</a>
+          <a href="terms.html" role="menuitem">תקנון ותנאי שימוש</a>
+        </div>
+      </details>
+    </nav>
+  </div>
+
+  <style>
+    /* Grouped nav — single-level dropdown, fast & mobile-friendly */
+    #siteHeader .nav{ overflow: visible; }
+    #siteHeader .navGroup{ position: relative; }
+    #siteHeader .navGroup > summary{
+      list-style: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 10px;
+      border-radius: 14px;
+      font-weight: 900;
+      color: var(--ink);
+      user-select: none;
+      border: 1px solid transparent;
+    }
+    #siteHeader .navGroup > summary::-webkit-details-marker{ display:none; }
+    #siteHeader .navGroup[open] > summary{
+      background: rgba(157,195,230,.18);
+      border-color: rgba(42,91,154,.18);
+    }
+    #siteHeader .navDrop{
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      min-width: 250px;
+      padding: 8px;
+      border-radius: 16px;
+      border: 1px solid rgba(31,41,55,.12);
+      background: #fff;
+      box-shadow: 0 18px 40px rgba(0,0,0,.10);
+      display: grid;
+      gap: 4px;
+      z-index: 2000;
+    }
+    #siteHeader .navDrop a{
+      display: block;
+      padding: 10px 10px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 900;
+      color: var(--ink);
+    }
+    #siteHeader .navDrop a:hover{ background: rgba(157,195,230,.18); }
+
+    /* Mobile: keep dropdowns inside flow so they won't get clipped */
+    @media (max-width: 900px){
+      #siteHeader .navDrop{
+        position: static;
+        min-width: unset;
+        margin-top: 6px;
+        box-shadow: none;
+        background: #fff;
+      }
+      #siteHeader .navGroup{ width: 100%; }
+      #siteHeader .navGroup > summary{ width: 100%; justify-content: space-between; }
+    }
+  </style>
+</header>
+
+<main class="mainContent"><section class="hero product-hero heroSmall"><img loading="eager" decoding="async" alt="" aria-hidden="true" class="decorPhoto decorCR" src="assets/img/photos/dogs-chair.jpg"/><div class="wrap heroInner"><div class="heroCopy center-text"><h1>קנייה מאמזון – מידע</h1>
+          <div class="muted" style="margin-top:6px;font-weight:900;">עודכן לאחרונה: 31.01.2026</div><p>משלוחים, מיסים, הגדרות ועמלות בקנייה מאמזון ארה״ב ואמזון אנגליה לישראל</p></div></div></section><section class="section"><div class="wrap"><div class="panel"><p class="tagline">
+      בעמוד זה ריכזנו מידע חשוב על משלוחים, מיסים, הגדרות שפה ומטבע, וטיפים לחיסכון בעלויות כשאתן קונות מאמזון ארה״ב (Amazon US) ואמזון אנגליה (Amazon UK).
+    </p><div class="note">
+<strong>חשוב:</strong> המידע בעמוד זה הוא כללי בלבד. מחירים, תנאי משלוח ועמלות משתנים כל הזמן. תמיד בדקו את המחיר הסופי ואת פירוט המיסים/עמלות בעמוד התשלום באמאזון לפני הזמנה.
+    </div><div class="section-box">
+<div class="section-title-small">קצר על האתרים בהם אנחנו משתמשות</div>
+<div class="chips">
+<span class="chip">Amazon US – אמזון ארה״ב</span>
+<span class="chip">Amazon UK – אמזון אנגליה</span>
+</div>
+<p>
+        ברוב המוצרים בעמודי ההמלצות שלנו תמצאו קישורים לאמאזון ארה״ב או אמאזון אנגליה. מידע על אזור המשלוח (US / UK) מופיע גם בכרטיס המוצר.
+      </p>
+</div><h2>אמאזון ארה״ב (Amazon US)</h2><p>
+      באמאזון ארה״ב הרבה מוצרים מסומנים כ:
+      <strong>״FREE delivery to Israel on eligible orders over $49״</strong>.
+    </p><ul>
+<li>
+        כדי להגיע למינימום של <strong>$49</strong> למשלוח חינם, אפשר וכדאי
+        להרכיב סל מקניות ממותגים ומוכרים שונים – כל עוד ליד כל מוצר כתוב שהוא
+        נכלל במשלוח חינם מעל $49.
+      </li>
+<li>
+<strong>זמן משלוח ממוצע:</strong> בדרך-כלל סביב שבועיים לישראל (לפעמים פחות או יותר, תלוי במוצר ובתקופה).
+      </li>
+<li>
+        יש לשים לב ל־<strong>Import Fees / Import Charges</strong> המופיעים בקופה – הם חלק מהעלות הסופית.
+      </li>
+</ul><h2>אמאזון אנגליה (Amazon UK)</h2><ul>
+<li>
+<strong>זמן משלוח ממוצע:</strong> לרוב כשבוע, ולעיתים אפילו פחות.
+      </li>
+<li>
+        באמאזון אנגליה בדרך-כלל ככל שהסל גדול יותר (יותר מוצרים יחד באותה הזמנה),
+        כך <strong>עלות המשלוח הממוצעת לכל מוצר יורדת</strong>.
+      </li>
+<li>
+        גם כאן, חשוב לבדוק בעמוד התשלום מהי עלות המשלוח הסופית ומה גובה ה־
+        <strong>Import Charges</strong> (אם יש).
+      </li>
+</ul>
+ הגדרות שפה ומטבע 
+<h2>איך לשנות שפה ומטבע באמאזון (US &amp; UK)</h2><div class="section-box">
+<div class="section-title-small">שינוי שפה באתר (מחשב)</div>
+<ul>
+<li>היכנסו ל־<strong>Amazon.com</strong> או <strong>Amazon.co.uk</strong> בחשבון שלכן.</li>
+<li>גללו לתחתית הדף וחפשו אייקון של <strong>דגל / כדור-ארץ</strong> (Language / Country &amp; Region).</li>
+<li>לחצו עליו ובחרו את השפה המועדפת (בדרך-כלל אנגלית). אם קיימת אפשרות לעברית, ניתן לבחור גם בה.</li>
+</ul>
+</div><div class="section-box">
+<div class="section-title-small">שינוי מטבע לשקלים (ILS) – אתר במחשב</div>
+<ul>
+<li>בעמוד הראשי, גללו לתחתית הדף וחפשו קישור בסגנון <strong>Change currency / ₪ ILS</strong> (בדרך-כלל ליד הגדרות האזור).</li>
+<li>בחרו <strong>ILS – Israeli Shekel</strong> ושמרו.</li>
+<li>
+          במקרים מסוימים תמצאו גם דרך התפריט:
+          <strong>Accounts &amp; Lists → Your Account → Ordering and shopping preferences → Change currency</strong>.
+        </li>
+</ul>
+<p class="disclaimer">
+        גם אחרי שינוי המטבע לשקלים, החיוב הסופי נעשה לפי שערי המרה ועמלות הסליקה של חברת האשראי / אמזון – לכן תמיד כדאי לבדוק את הסכום הסופי בשקלים.
+      </p>
+</div><div class="section-box">
+<div class="section-title-small">שינוי שפה ומטבע באפליקציית Amazon</div>
+<ul>
+<li>פתחו את האפליקציה → לחצו על כפתור התפריט (≡).</li>
+<li>עברו ל־<strong>Settings / הגדרות</strong>.</li>
+<li>בחרו <strong>Country &amp; Language</strong> ושנו את השפה והאזור (למשל: Israel / United States / United Kingdom).</li>
+<li>בחלק מהגרסאות ניתן גם לבחור את המטבע (Currency) ולבחור ILS, ואם לא – המחירים יוצגו בדולרים / ליש״ט.</li>
+</ul>
+</div>
+ מיסים בישראל 
+<h2>מיסים, מע״מ ו־Import Charges לישראל</h2><ul>
+<li>
+        נכון להיום, לרוב ההזמנות עד <strong>כ־150 דולר</strong> (כולל משלוח, ללא ביטוח)
+        אפשר להימנע ממסים נוספים, אבל:
+        <strong>תמיד</strong> חשוב לקרוא את ההסבר שמופיע באמאזון לגבי
+        <em>Import Fees Deposit / Import Charges</em>.
+      </li>
+<li>
+        מעל סכום זה יכולים לחול מע״מ / מיסים נוספים – אמזון לעיתים גובה מראש
+        פיקדון מיסים (Import Fees Deposit) ומטפלת עבורך בשחרור מהמכס.
+      </li>
+<li>
+        לפני אישור ההזמנה, בדקו:
+        <strong>מחיר המוצר + משלוח + Import Charges = המחיר הסופי</strong>.
+      </li>
+</ul>
+ שונות / שינויים במוצר 
+<h2>שינויים במוצרים ובמחירים</h2><p>
+      בעמודי המוצרים באתר שלנו אנחנו מציגות טווחי מחירים משוערים ומידע שנכון למועד העדכון האחרון.
+      באמאזון עצמה המידע יכול להשתנות: מחיר, נפח, פורמולה, אריזה, תנאי משלוח ועוד.
+    </p><ul>
+<li>תמיד קראו מחדש את <strong>שם המוצר המלא</strong> ואת <strong>הפירוט / התיאור</strong> בעמוד באמאזון.</li>
+<li>בדקו את גודל האריזה (ml / gr / fl oz) ותאמו לציפיות שלכן.</li>
+<li>אם משהו נראה שונה מהכתוב אצלנו – סמכו על מה שמופיע <strong>באתר אמאזון</strong> בעת הרכישה.</li>
+</ul>
+ אפיליאציה 
+<h2>גילוי נאות – קישורי אפיליאציה</h2><p class="disclaimer">
+      חלק מהקישורים למוצרים באתר שלנו הם <strong>קישורי אפיליאציה</strong>.
+      זה אומר שאם תבצעו רכישה דרך הקישור – ייתכן שנקבל עמלה קטנה מאמאזון, ללא עלות נוספת עבורכן.
+      העמלה הזו עוזרת לנו להמשיך לתחזק את האתר, לבדוק מוצרים, ולעדכן רשימות cruelty free.
+    </p>
+ טיפים לחיסכון 
+<h2>טיפים לחיסכון במשלוח</h2><ul>
+<li>
+        נסו לרכז כמה שיותר מוצרים בהזמנה אחת – במיוחד באמאזון אנגליה, שם
+        <strong>עלות המשלוח הממוצעת פר מוצר יורדת</strong> כשסכום ההזמנה עולה.
+      </li>
+<li>
+        בדקו אם אותו מוצר קיים גם ב־US וגם ב־UK – לפעמים ההפרש במשלוח או במסים
+        עושה את ההבדל.
+      </li>
+<li>
+        השוו בין כמה מוצרים מאותו מותג כדי להגיע לסל מעל סכום המשלוח החינם
+        (למשל מעל $49) בלי לקנות „סתם”.
+      </li>
+</ul>
+ יצירת קשר 
+<h2>שאלות, רעיונות ופידבק</h2><p>
+      נשמח לשמוע על כל רעיון, תיקון או משהו שנתקלתן בו אצלנו באתר ♥  
+      אפשר לפנות אלינו דרך עמוד <a class="inline-link" href="contact.html">צור קשר</a>.
+    </p></div></div></section></main><footer class="siteFooter">
+  <div class="wrap">
+    <div aria-label="ציטוטים" class="footerQuotes">
+      <span class="quotePill">חמלה היא דרך חיים</span>
+      <span class="quotePill">חיה ותן לחיות</span>
+      <span class="quotePill">חמלה היא האופנה הכי יפה</span>
+      <span class="quotePill">היו טובים לכל היצורים</span>
+    </div>
+
+    <div class="footerGrid" aria-label="קישורים בתחתית האתר">
+      <div class="footerCol">
+        <h3 class="footerTitle">קישורים מהירים</h3>
+        <a href="products.html">מאגר מוצרים עם חיפוש</a>
+        <a href="bundles.html">מארזים משתלמים</a>
+        <a href="todays-top-deals.html">דילים חמים היום</a>
+        <a href="ingredient-detective.html">בודק רכיבים</a>
+      </div>
+
+      <div class="footerCol">
+        <h3 class="footerTitle">מותגים</h3>
+        <a href="recommended-brands.html">מותגים מומלצים מחו״ל</a>
+        <a href="israeli-brands.html">מותגים מומלצים בישראל</a>
+        <a href="pharmacy.html">מוצרים טבעוניים בפארם</a>
+      </div>
+
+      <div class="footerCol">
+        <h3 class="footerTitle">אודות ועזרה</h3>
+        <a href="about.html">על האתר</a>
+        <a href="methodology.html">איך אנחנו בודקים</a>
+        <a href="contact.html">צור קשר ותיקונים</a>
+        <a href="terms.html">תקנון ותנאי שימוש</a>
+      </div>
+    </div>
+
+    <div class="footerBottom">
+      <p class="muted footerNote">
+        חלק מהקישורים באתר עשויים להיות קישורי שותפים — זה עוזר לנו לשמור את המאגר חינמי ומעודכן, בלי עלות נוספת עבורך.
+        <a href="terms.html">פרטים בתקנון</a>
+      </p>
+
+      <p class="muted footerLegal">© 2026 NoCrueltyIL. כל הזכויות שמורות. All rights reserved.</p>
+    </div>
+  </div>
+
+  <style>
+    .footerGrid{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(15, 23, 42, 0.08);
+    }
+    .footerTitle{
+      margin: 0 0 8px;
+      font-size: 0.95rem;
+      font-weight: 1000;
+      color: rgba(15,23,42,.88);
+    }
+    .footerCol a{
+      display: block;
+      text-decoration: none;
+      padding: 6px 0;
+      font-weight: 800;
+      color: rgba(15,23,42,.78);
+    }
+    .footerCol a:hover{ color: rgba(42,91,154,.98); }
+
+    .footerBottom{ margin-top: 14px; }
+    .footerNote{ margin-top: 10px; }
+    .footerLegal{ margin-top: 10px; opacity: .9; }
+
+    @media (max-width: 820px){
+      .footerGrid{ grid-template-columns: 1fr; }
+      .footerCol a{ padding: 4px 0; }
+    }
+  </style>
+</footer>
+<script defer="" src="assets/js/site.js?v=2026-01-31-v15"></script>
+
+<!-- Weglot helper: refresh translations after dynamic content renders -->
+<script>
+(function(){
+  function wgRefresh(){
+    try{
+      if (window.Weglot && typeof Weglot.refresh === 'function') Weglot.refresh();
+    }catch(e){}
+  }
+  // initial
+  document.addEventListener('DOMContentLoaded', function(){ setTimeout(wgRefresh, 80); });
+
+  // optional: if your JS triggers this after rendering cards/lists
+  window.addEventListener('kbwg:content-rendered', function(){ setTimeout(wgRefresh, 80); });
+
+  // watch for DOM changes (debounced)
+  var t=null;
+  var mo=new MutationObserver(function(){
+    clearTimeout(t);
+    t=setTimeout(wgRefresh, 250);
+  });
+  mo.observe(document.documentElement, { childList:true, subtree:true });
+})();
+</script>
+
+</body>
+</html>

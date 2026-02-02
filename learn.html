@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="he">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>מידע | 100% טבעוני · לא נוסו על בעלי חיים</title>
+<meta content="מידע קצר וברור שיעזור לקנות חכם: איך לזהות מותגים 100% טבעוניים שלא נוסו על בעלי חיים, ומה חשוב לבדוק לפני קנייה." name="description"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="assets/css/styles.css?v=2026-01-31-v17" rel="stylesheet"/>
+<link href="assets/img/logo.png" rel="icon" type="image/png"/>
+</head>
+<body class="page-learn">
+<header class="siteHeader" id="siteHeader">
+  <div class="wrap headerRow">
+    <a aria-label="דף הבית" class="logo" href="index.html">
+      <img alt="לקנות ללא אכזריות" class="logoImg" height="40" src="assets/img/logo.png" width="40"/>
+      <span class="logoText">לקנות ללא אכזריות</span>
+    </a>
+
+    <!-- Mobile hamburger (required for the drawer nav) -->
+    <button class="navToggle" type="button" aria-label="פתח תפריט" aria-expanded="false">
+      <span class="navToggleIcon" aria-hidden="true">☰</span>
+      <span class="navToggleText">תפריט</span>
+    </button>
+
+    <nav aria-label="ניווט ראשי" class="nav">
+<div class="navDrawerHeader" aria-label="כותרת תפריט">
+  <a class="navDrawerLogo" href="index.html">
+    <img alt="לקנות ללא אכזריות" class="navDrawerLogoImg" height="40" src="assets/img/logo.png" width="40"/>
+    <span class="navDrawerLogoText">לקנות ללא אכזריות</span>
+  </a>
+  <button class="navDrawerClose" type="button" aria-label="סגירת תפריט">×</button>
+</div>
+
+      <a href="index.html">דף הבית</a>
+
+      <details class="navGroup">
+        <summary>מוצרים מומלצים</summary>
+        <div class="navDrop" role="menu" aria-label="מוצרים מומלצים">
+          <a href="bundles.html" role="menuitem">מארזים משתלמים (Bundles)</a>
+          <a href="products.html" role="menuitem">מאגר מוצרים עם חיפוש</a>
+        </div>
+      </details>
+
+      <details class="navGroup">
+        <summary>מותגים מומלצים</summary>
+        <div class="navDrop" role="menu" aria-label="מותגים מומלצים">
+          <a href="recommended-brands.html" role="menuitem">מותגים מומלצים מחו״ל</a>
+          <a href="israeli-brands.html" role="menuitem">מותגים מומלצים בישראל</a>
+        </div>
+      </details>
+
+      <details class="navGroup">
+        <summary>דילים ומבצעים</summary>
+        <div class="navDrop" role="menu" aria-label="דילים ומבצעים">
+          <a href="todays-top-deals.html" role="menuitem">דילים חמים היום</a>
+          <a href="shopping-calendar.html" role="menuitem">לוח מבצעים וסיילים</a>
+        </div>
+      </details>
+
+      <details class="navGroup">
+        <summary>כלים לקנייה חכמה</summary>
+        <div class="navDrop" role="menu" aria-label="כלים לקנייה חכמה">
+          <a href="ingredient-detective.html" role="menuitem">בודק רכיבים ומה מתאים לך</a>
+          <a href="pharmacy.html" role="menuitem">מוצרים טבעוניים בפארם</a>
+          <a href="amazon-info.html" role="menuitem">איך קונים מחו״ל (אמזון)</a>
+        </div>
+      </details>
+
+      <details class="navGroup">
+        <summary>מדריכים ומפות</summary>
+        <div class="navDrop" role="menu" aria-label="מדריכים ומפות">
+          <a href="vegan-in-israel.html" role="menuitem">מדריך טבעוני בישראל</a>
+          <a href="hidden-gems-map.html" role="menuitem">מפת Hidden Gems</a>
+          <a href="learn.html" role="menuitem">מידע ושאלות נפוצות</a>
+        </div>
+      </details>
+
+      <details class="navGroup">
+        <summary>קהילה ועשייה טובה</summary>
+        <div class="navDrop" role="menu" aria-label="קהילה ועשייה טובה">
+          <a href="wall-of-kindness.html" role="menuitem">קיר הטוב (Wall of Kindness)</a>
+        </div>
+      </details>
+
+      <details class="navGroup">
+        <summary>אודות ועזרה</summary>
+        <div class="navDrop" role="menu" aria-label="אודות ועזרה">
+          <a href="methodology.html" role="menuitem">איך אנחנו בודקים (שיטה)</a>
+          <a href="about.html" role="menuitem">על האתר והחזון</a>
+          <a href="contact.html" role="menuitem">צור קשר ותיקונים</a>
+          <a href="terms.html" role="menuitem">תקנון ותנאי שימוש</a>
+        </div>
+      </details>
+    </nav>
+  </div>
+
+  <style>
+    /* Grouped nav — single-level dropdown, fast & mobile-friendly */
+    #siteHeader .nav{ overflow: visible; }
+    #siteHeader .navGroup{ position: relative; }
+    #siteHeader .navGroup > summary{
+      list-style: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 10px;
+      border-radius: 14px;
+      font-weight: 900;
+      color: var(--ink);
+      user-select: none;
+      border: 1px solid transparent;
+    }
+    #siteHeader .navGroup > summary::-webkit-details-marker{ display:none; }
+    #siteHeader .navGroup[open] > summary{
+      background: rgba(157,195,230,.18);
+      border-color: rgba(42,91,154,.18);
+    }
+    #siteHeader .navDrop{
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      min-width: 250px;
+      padding: 8px;
+      border-radius: 16px;
+      border: 1px solid rgba(31,41,55,.12);
+      background: #fff;
+      box-shadow: 0 18px 40px rgba(0,0,0,.10);
+      display: grid;
+      gap: 4px;
+      z-index: 2000;
+    }
+    #siteHeader .navDrop a{
+      display: block;
+      padding: 10px 10px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 900;
+      color: var(--ink);
+    }
+    #siteHeader .navDrop a:hover{ background: rgba(157,195,230,.18); }
+
+    /* Mobile: keep dropdowns inside flow so they won't get clipped */
+    @media (max-width: 900px){
+      #siteHeader .navDrop{
+        position: static;
+        min-width: unset;
+        margin-top: 6px;
+        box-shadow: none;
+        background: #fff;
+      }
+      #siteHeader .navGroup{ width: 100%; }
+      #siteHeader .navGroup > summary{ width: 100%; justify-content: space-between; }
+    }
+  </style>
+</header>
+<main id="main">
+<section class="hero product-hero heroSmall">
+<img alt="" aria-hidden="true" class="decorPhoto decorCL" decoding="async" loading="eager" src="assets/img/photos/hero-learn.png"/>
+<div class="wrap heroInner">
+<div class="heroCopy center-text">
+<h1>מידע</h1>
+          <div class="muted" style="margin-top:6px;font-weight:900;">עודכן לאחרונה: 31.01.2026</div>
+<p>הסברים קצרים ושאלות נפוצות שיעזרו לקנות חכם ולהבין על מה כדאי להסתכל.</p>
+</div>
+</div>
+</section>
+<section class="panel filter-panel">
+<div class="wrap">
+<div class="toolbar-container contentCard">
+<p class="lead">כלים קטנים שיעזרו לך לקנות עם לב שלם – בלי ללכת לאיבוד בין לוגואים, הצהרות ורשימות שונות.</p>
+<div class="cardsGrid">
+<div class="infoCard">
+<h2>מה זה “לא נוסו על בעלי חיים” (Cruelty‑Free)?</h2>
+<p>“לא נוסו על בעלי חיים” מתייחס למדיניות ניסויים (מוצר סופי + רכיבים + ספקים). באתר הזה הסינון הוא כפול — אנחנו מציגים רק מה שהוא גם <strong>100% טבעוני</strong> וגם <strong>לא נוסו על בעלי חיים</strong>.</p>
+</div>
+<div class="infoCard">
+<h2>למה חשוב לבדוק תעודות?</h2>
+<p>כי לא כל מי שכותב “לא ניסינו” באמת עומד בסטנדרט. תעודה טובה היא לרוב תהליך עם בדיקות, תיעוד וחידוש.</p>
+</div>
+<div class="infoCard">
+<h2>טבעוני ≠ לא נוסו על בעלי חיים</h2>
+<p><b>טבעוני</b> = בלי רכיבים מן החי. <b>לא נוסו על בעלי חיים</b> = בלי ניסויים. זה יכול לחפוף – אבל לא תמיד.</p>
+</div>
+</div>
+<div class="noteBox">
+<div class="comparePill">✅ טיפ פרקטי: חפשי קודם לא נוסו על בעלי חיים, ואז בדקי אם יש גם טבעוני (אם חשוב לך).</div>
+</div>
+</div>
+</div>
+</section>
+<section class="panel filter-panel">
+<div class="wrap">
+<div class="toolbar-container contentCard">
+<h2>הבדלים חשובים: Leaping Bunny / CFI מול PETA</h2>
+<p class="muted">ההבדל בין הארגונים הללו משמעותי – בעיקר ברמת הפיקוח ותהליך האימות שהמותגים עוברים.</p>
+<div aria-label="טבלת השוואה" class="compareTableWrap">
+<table class="compareTable">
+<thead>
+<tr>
+<th>תכונה</th>
+<th>Leaping Bunny / CFI</th>
+<th>PETA</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>רמת אמינות</td>
+<td>גבוהה מאוד (ביקורות חיצוניות)</td>
+<td>בינונית (הצהרה בלבד)</td>
+</tr>
+<tr>
+<td>בדיקת ספקים</td>
+<td>חובה (מערכת ניטור מתועדת)</td>
+<td>הצהרה כללית של המותג</td>
+</tr>
+<tr>
+<td>ביקורות (Audits)</td>
+<td>כן, באופן קבוע</td>
+<td>לא</td>
+</tr>
+<tr>
+<td>חידוש שנתי</td>
+<td>כן</td>
+<td>לא תמיד (לרוב הצהרה חד פעמית)</td>
+</tr>
+<tr>
+<td>תפוצה</td>
+<td>בינלאומית (דרך CFI)</td>
+<td>בינלאומית</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="grid two spaced" style="margin-top:16px">
+<div class="infoCard">
+<h3>1) Leaping Bunny ("הארנב המנתר")</h3>
+<p>נחשב ל“תקן הזהב” בעולם הקרואלטי‑פרי.</p>
+<ul>
+<li><b>אימות מחמיר</b>: לא רק הצהרה – נדרשת מערכת ניטור ספקים והסכמה לביקורות חיצוניות.</li>
+<li><b>Fixed Cut‑off Date</b>: החברה קובעת תאריך שממנו והלאה היא וספקיה לא מבצעים ניסויים.</li>
+<li><b>חידוש</b>: התחייבות מתחדשת מדי שנה.</li>
+</ul>
+</div>
+<div class="infoCard">
+<h3>2) לקנות ללא אכזריות International (CFI)</h3>
+<p>זהו הגוף העולמי (בריטניה) שמפעיל את תוכנית Leaping Bunny מחוץ לצפון אמריקה.</p>
+<ul>
+<li>במילים פשוטות: כשאת רואה לוגו Leaping Bunny על מותג בינלאומי – לעיתים קרובות האישור מגיע דרך <b>CFI</b>.</li>
+<li><b>למה זה מבלבל?</b> leapingbunny.org מציג בעיקר מותגים של השלוחה האמריקאית; מותגי intl רבים יופיעו דווקא באתר CFI.</li>
+</ul>
+</div>
+</div>
+<div class="infoCard" style="margin-top:16px">
+<h3>3) PETA (Beauty Without Bunnies)</h3>
+<p>רשימה גדולה יותר, כי קל יותר להיכנס אליה: בדרך כלל מדובר בשאלון + הצהרת אמון חתומה (ללא ביקורות עצמאיות אצל ספקים/מפעלים).</p>
+<ul>
+<li>יתרון: הרבה מותגים זמינים ברשימה.</li>
+<li>חיסרון: פחות פיקוח חיצוני לעומת Leaping Bunny / CFI.</li>
+<li>יש גם גרסה טבעונית של PETA (לא נוסו על בעלי חיים + טבעוני).</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+</main>
+<footer class="siteFooter">
+  <div class="wrap">
+    <div aria-label="ציטוטים" class="footerQuotes">
+      <span class="quotePill">חמלה היא דרך חיים</span>
+      <span class="quotePill">חיה ותן לחיות</span>
+      <span class="quotePill">חמלה היא האופנה הכי יפה</span>
+      <span class="quotePill">היו טובים לכל היצורים</span>
+    </div>
+
+    <div class="footerGrid" aria-label="קישורים בתחתית האתר">
+      <div class="footerCol">
+        <h3 class="footerTitle">קישורים מהירים</h3>
+        <a href="products.html">מאגר מוצרים עם חיפוש</a>
+        <a href="bundles.html">מארזים משתלמים</a>
+        <a href="todays-top-deals.html">דילים חמים היום</a>
+        <a href="ingredient-detective.html">בודק רכיבים</a>
+      </div>
+
+      <div class="footerCol">
+        <h3 class="footerTitle">מותגים</h3>
+        <a href="recommended-brands.html">מותגים מומלצים מחו״ל</a>
+        <a href="israeli-brands.html">מותגים מומלצים בישראל</a>
+        <a href="pharmacy.html">מוצרים טבעוניים בפארם</a>
+      </div>
+
+      <div class="footerCol">
+        <h3 class="footerTitle">אודות ועזרה</h3>
+        <a href="about.html">על האתר</a>
+        <a href="methodology.html">איך אנחנו בודקים</a>
+        <a href="contact.html">צור קשר ותיקונים</a>
+        <a href="terms.html">תקנון ותנאי שימוש</a>
+      </div>
+    </div>
+
+    <div class="footerBottom">
+      <p class="muted footerNote">
+        חלק מהקישורים באתר עשויים להיות קישורי שותפים — זה עוזר לנו לשמור את המאגר חינמי ומעודכן, בלי עלות נוספת עבורך.
+        <a href="terms.html">פרטים בתקנון</a>
+      </p>
+
+      <p class="muted footerLegal">© 2026 NoCrueltyIL. כל הזכויות שמורות. All rights reserved.</p>
+    </div>
+  </div>
+
+  <style>
+    .footerGrid{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(15, 23, 42, 0.08);
+    }
+    .footerTitle{
+      margin: 0 0 8px;
+      font-size: 0.95rem;
+      font-weight: 1000;
+      color: rgba(15,23,42,.88);
+    }
+    .footerCol a{
+      display: block;
+      text-decoration: none;
+      padding: 6px 0;
+      font-weight: 800;
+      color: rgba(15,23,42,.78);
+    }
+    .footerCol a:hover{ color: rgba(42,91,154,.98); }
+
+    .footerBottom{ margin-top: 14px; }
+    .footerNote{ margin-top: 10px; }
+    .footerLegal{ margin-top: 10px; opacity: .9; }
+
+    @media (max-width: 820px){
+      .footerGrid{ grid-template-columns: 1fr; }
+      .footerCol a{ padding: 4px 0; }
+    }
+  </style>
+</footer>
+<script defer="" src="assets/js/site.js?v=2026-01-31-v15"></script>
+<!-- Weglot helper: refresh translations after dynamic content renders -->
+<script>
+(function(){
+  function wgRefresh(){
+    try{
+      if (window.Weglot && typeof Weglot.refresh === 'function') Weglot.refresh();
+    }catch(e){}
+  }
+  // initial
+  document.addEventListener('DOMContentLoaded', function(){ setTimeout(wgRefresh, 80); });
+
+  // optional: if your JS triggers this after rendering cards/lists
+  window.addEventListener('kbwg:content-rendered', function(){ setTimeout(wgRefresh, 80); });
+
+  // watch for DOM changes (debounced)
+  var t=null;
+  var mo=new MutationObserver(function(){
+    clearTimeout(t);
+    t=setTimeout(wgRefresh, 250);
+  });
+  mo.observe(document.documentElement, { childList:true, subtree:true });
+})();
+</script>
+</body>
+</html>
