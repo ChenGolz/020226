@@ -2,7 +2,7 @@
 
 (function () {
   // Build marker: use this to verify you loaded the latest JS
-  window.KBWG_BUILD = '2026-02-02-v17';
+  window.KBWG_BUILD = '2026-02-02-v19';
   try { console.info('[KBWG] build', window.KBWG_BUILD); } catch(e) {}
     
 function kbwgInjectFaqSchema(){
@@ -121,6 +121,37 @@ function kbwgSetActiveNav() {
     const nav = header.querySelector('.nav');
     if (!btn || !nav) return;
 
+    // Save original placement so we can temporarily move the drawer to <body> on mobile.
+    // This avoids stacking-context bugs (sticky/backdrop-filter/transform ancestors) that can
+    // cause the drawer to appear "greyed" behind the overlay on some mobile browsers.
+    const originalParent = nav.parentNode;
+    const originalNext = nav.nextSibling;
+
+    const attachNavToBody = () => {
+      if (nav.parentNode !== document.body) {
+        // Store once for safety (in case init runs again after injection)
+        if (!nav.__kbwgOriginalParent) nav.__kbwgOriginalParent = originalParent;
+        if (!nav.__kbwgOriginalNext) nav.__kbwgOriginalNext = originalNext;
+        document.body.appendChild(nav);
+        nav.classList.add('kbwgDrawerNav');
+      }
+    };
+
+    const restoreNavFromBody = () => {
+      const p = nav.__kbwgOriginalParent || originalParent;
+      if (!p) return;
+      if (nav.parentNode === document.body) {
+        try {
+          const next = nav.__kbwgOriginalNext || originalNext;
+          if (next && next.parentNode === p) p.insertBefore(nav, next);
+          else p.appendChild(nav);
+        } catch (_) {
+          p.appendChild(nav);
+        }
+        nav.classList.remove('kbwgDrawerNav');
+      }
+    };
+
     // Ensure we only init once
     if (header.dataset.kbwgMobileNavInit === '1') return;
     header.dataset.kbwgMobileNavInit = '1';
@@ -157,6 +188,7 @@ function kbwgSetActiveNav() {
 
       if (!mq.matches) {
         // Desktop: leave nav as-is
+        restoreNavFromBody();
         overlay.style.setProperty('display', 'none', 'important');
         overlay.style.setProperty('pointer-events', 'none', 'important');
         document.body.classList.remove('menuOpen', 'menuopen');
@@ -169,6 +201,9 @@ function kbwgSetActiveNav() {
         });
         return;
       }
+
+      // Mobile: move drawer nav to <body> to eliminate stacking-context issues.
+      attachNavToBody();
 
       // Always enforce very high z-index on mobile, independent of CSS
       overlay.style.setProperty('z-index', '2147483640', 'important');

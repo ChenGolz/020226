@@ -86,12 +86,6 @@ h3{ font-size: 18px; margin:0 0 8px; }
     .logo{ min-width: 0; }
   }
 }
-.siteHeader .nav a{
-    flex: 0 0 auto;
-    font-size: 13px;
-    padding: 6px 9px;
-  }
-}
 .logo{
   display:flex; align-items:center; gap:10px; min-width: 220px;
 }
@@ -200,6 +194,18 @@ h3{ font-size: 18px; margin:0 0 8px; }
 }
 @media (max-width: 920px){
   .heroInner{ grid-template-columns: 1fr; }
+}
+
+/* Drawer nav moved to <body> (site.js v18)
+   Some mobile browsers treat fixed elements inside sticky/backdrop-filter headers as a separate stacking context.
+   When we move the nav to <body>, it no longer matches `.siteHeader .nav` selectors—so we restyle it here. */
+@media (max-width: 900px){
+  .kbwgDrawerNav{ direction: rtl; }
+  .kbwgDrawerNav a{
+    display: block;
+    width: 100%;
+    text-align: right;
+  }
 }
 
 /* --- Compact heroes (show content without scrolling) --- */
