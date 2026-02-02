@@ -2,7 +2,7 @@
 
 (function () {
   // Build marker: use this to verify you loaded the latest JS
-  window.KBWG_BUILD = '2026-02-02-v21';
+  window.KBWG_BUILD = '2026-02-03-v22';
   try { console.info('[KBWG] build', window.KBWG_BUILD); } catch(e) {}
     
 function kbwgInjectFaqSchema(){

@@ -3,7 +3,7 @@
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
-  const DATA_URL = 'data/vegan-in-israel.json?v=2026-02-02-v21';
+  const DATA_URL = 'data/vegan-in-israel.json?v=2026-02-02-v19';
   const STATE = {
     listPage: 1,
     listPer: 0,

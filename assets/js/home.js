@@ -213,7 +213,7 @@
     var productsGrid = qs('#homeProductsGrid');
     if (!dealsGrid && !productsGrid) return;
 
-    var productsUrl = 'data/products.json?v=2026-02-02-v21';
+    var productsUrl = 'data/products.json?v=2026-02-02-v19';
     fetch(productsUrl, { cache: 'no-store' })
       .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
       .then(function(data){

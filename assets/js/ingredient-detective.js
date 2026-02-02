@@ -4,13 +4,47 @@
 (function () {
   'use strict';
 
-  const BUILD = '2026-02-02-v21';
+  const BUILD = '2026-02-03-v22';
   console.log('[KBWG] Ingredient Detective build', BUILD);
 
-    const DB_URLS = [
-    `data/ingredient-db.json?v=${encodeURIComponent(BUILD)}`,
-    `../data/ingredient-db.json?v=${encodeURIComponent(BUILD)}`
-  ];
+  // Resolve correctly when Weglot serves pages under /en/... (or when hosted under a subpath)
+  function siteBaseFromScript() {
+    try {
+      var src = '';
+      try { src = (document.currentScript && document.currentScript.src) ? document.currentScript.src : ''; } catch (e) { src = ''; }
+      if (!src) {
+        var scripts = document.getElementsByTagName('script');
+        for (var i = scripts.length - 1; i >= 0; i--) {
+          var ssrc = scripts[i] && scripts[i].src ? String(scripts[i].src) : '';
+          if (ssrc.indexOf('ingredient-detective.js') !== -1) { src = ssrc; break; }
+        }
+      }
+      if (!src) return '/';
+      var u = new URL(src, location.href);
+      var p = u.pathname || '/';
+      var idx = p.indexOf('/assets/js/');
+      var base = idx >= 0 ? p.slice(0, idx) : p.replace(/\/[^\/]+$/, '');
+      base = base.replace(/\/+$/, '');
+      var parts = base.split('/').filter(Boolean);
+      var langs = { en: 1, he: 1, iw: 1, ar: 1, fr: 1, es: 1, de: 1, ru: 1 };
+      if (parts.length && langs[parts[parts.length - 1]]) parts.pop();
+      return '/' + parts.join('/');
+    } catch (e) { return '/'; }
+  }
+
+  function resolveFromBase(rel) {
+    try {
+      if (!rel) return rel;
+      var p = String(rel).replace(/^\.\//, '');
+      if (/^https?:\/\//i.test(p)) return p;
+      var base = siteBaseFromScript() || '/';
+      if (base === '/') return '/' + p.replace(/^\//, '');
+      return base + '/' + p.replace(/^\//, '');
+    } catch (e) { return rel; }
+  }
+
+
+  const DB_URL = resolveFromBase(`data/ingredient-db.json?v=${encodeURIComponent(BUILD)}`);
 
   // ----- utils
   const uniq = (arr) => Array.from(new Set((arr || []).filter(Boolean)));
@@ -66,26 +100,21 @@
     });
     return out;
   }
+
   async function loadDb() {
-    // Try multiple paths so it works both at / and under /en/ (or other subfolders)
-    let lastErr = null;
-    for (const url of DB_URLS) {
-      try {
-        const res = await fetch(url, { cache: 'no-store' });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const json = await res.json();
-        const list = Array.isArray(json) ? json : (json.ingredients || []);
-        DB = indexDb(list);
-        DB_READY = true;
-        console.log('[KBWG] ingredient DB loaded:', DB.length, 'from', url);
-        return;
-      } catch (e) {
-        lastErr = e;
-      }
+    try {
+      const res = await fetch(DB_URL, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json();
+      const list = Array.isArray(json) ? json : (json.ingredients || []);
+      DB = indexDb(list);
+      DB_READY = true;
+      console.log('[KBWG] ingredient DB loaded:', DB.length);
+    } catch (e) {
+      DB = [];
+      DB_READY = false;
+      console.warn('[KBWG] ingredient DB load failed:', e);
     }
-    console.warn('[KBWG] ingredient DB load failed:', lastErr);
-    throw lastErr;
-  }
   }
 
   // ----- matching

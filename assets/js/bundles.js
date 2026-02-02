@@ -14,7 +14,7 @@
 (function(){
   'use strict';
 
-  try { window.KBWG_BUNDLES_BUILD = '2026-02-02-v21'; console.info('[KBWG] Bundles build', window.KBWG_BUNDLES_BUILD); } catch(e) {}
+  try { window.KBWG_BUNDLES_BUILD = '2026-02-02-v19'; console.info('[KBWG] Bundles build', window.KBWG_BUNDLES_BUILD); } catch(e) {}
 
   var PRODUCTS_PATH = 'data/products.json';
   var FREE_SHIP_OVER_USD = 49;
@@ -1429,7 +1429,7 @@
     img.loading = 'lazy';
     img.alt = (p._brand ? (p._brand + ' ') : '') + (p._name || '');
     if(p._image) img.src = p._image;
-    img.onerror = function(){ this.onerror = null; this.src = 'assets/img/products/placeholder.jpg'; };
+    img.onerror = function(){ this.onerror = null; this.src = (window.KBWG_RESOLVE ? window.KBWG_RESOLVE('assets/img/products/placeholder.jpg') : 'assets/img/products/placeholder.jpg'); };
 
     var body = document.createElement('div');
 
@@ -1738,7 +1738,7 @@
     img.loading = 'lazy';
     img.alt = (p._brand ? (p._brand + ' ') : '') + (p._name || '');
     if(p._image) img.src = p._image;
-    img.onerror = function(){ this.onerror = null; this.src = 'assets/img/products/placeholder.jpg'; };
+    img.onerror = function(){ this.onerror = null; this.src = (window.KBWG_RESOLVE ? window.KBWG_RESOLVE('assets/img/products/placeholder.jpg') : 'assets/img/products/placeholder.jpg'); };
 
     var body = document.createElement('div');
 
@@ -2366,7 +2366,7 @@ var img = document.createElement('img');
     img.loading = 'lazy';
     img.alt = (p._brand ? (p._brand + ' ') : '') + (p._name || '');
     if(p._image) img.src = p._image;
-    img.onerror = function(){ this.onerror = null; this.src = 'assets/img/products/placeholder.jpg'; };
+    img.onerror = function(){ this.onerror = null; this.src = (window.KBWG_RESOLVE ? window.KBWG_RESOLVE('assets/img/products/placeholder.jpg') : 'assets/img/products/placeholder.jpg'); };
 
     var body = document.createElement('div');
 

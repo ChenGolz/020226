@@ -1,5 +1,5 @@
-// Build: 2026-02-02-v21
-try { window.KBWG_PRODUCTS_BUILD = '2026-02-02-v21'; console.info('[KBWG] KBWG_PRODUCTS_BUILD ' + window.KBWG_PRODUCTS_BUILD); } catch(e) {}
+// Build: 2026-02-03-v22
+try { window.KBWG_PRODUCTS_BUILD = '2026-02-03-v22'; console.info('[KBWG] KBWG_PRODUCTS_BUILD ' + window.KBWG_PRODUCTS_BUILD); } catch(e) {}
 
 /*
   Loads products from data/products.json (+ loads intl brands from data/intl-brands.json),
@@ -22,7 +22,16 @@ try { window.KBWG_PRODUCTS_BUILD = '2026-02-02-v21'; console.info('[KBWG] KBWG_P
   }
 
   function normalizeProducts(data) {
-    return Array.isArray(data) ? data : [];
+    var arr = Array.isArray(data) ? data : [];
+    // Normalize image paths so they work under /en/... and under subpaths.
+    for (var i = 0; i < arr.length; i++) {
+      var p = arr[i];
+      if (!p) continue;
+      if (p.image && typeof p.image === 'string') {
+        p.image = resolveFromBase(p.image);
+      }
+    }
+    return arr;
   }
 
   function normalizeBrands(data) {
@@ -65,9 +74,15 @@ try { window.KBWG_PRODUCTS_BUILD = '2026-02-02-v21'; console.info('[KBWG] KBWG_P
     } catch (e) { return rel; }
   }
 
+  // Expose resolver for other scripts (products.js/bundles.js/etc.)
+  try {
+    window.KBWG_SITE_BASE = siteBaseFromScript();
+    window.KBWG_RESOLVE = resolveFromBase;
+  } catch (e) {}
+
   // Cache-bust the JSON so image/offer fixes propagate immediately after upload.
-  var productsPath = resolveFromBase('data/products.json?v=2026-02-02-v21');
-  var intlBrandsPath = resolveFromBase('data/intl-brands.json?v=2026-02-02-v21');
+  var productsPath = resolveFromBase('data/products.json?v=2026-02-03-v22');
+  var intlBrandsPath = resolveFromBase('data/intl-brands.json?v=2026-02-03-v22');
 
   function isFileProtocol() {
     try { return location && location.protocol === 'file:'; } catch (e) { return false; }
@@ -136,7 +151,7 @@ try { window.KBWG_PRODUCTS_BUILD = '2026-02-02-v21'; console.info('[KBWG] KBWG_P
     })
     .finally(function () {
       // The main page logic expects window.PRODUCTS to exist.
-      loadScript(resolveFromBase('assets/js/products.js?v=2026-02-02-v21')).catch(function (e) {
+      loadScript(resolveFromBase('assets/js/products.js?v=2026-02-02-v19')).catch(function (e) {
         console.error('[products-json-loader] Could not start products.js', e);
       });
     });

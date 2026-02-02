@@ -1,4 +1,4 @@
-// Build: 2026-02-02-v21
+// Build: 2026-02-03-v22
 // Renders "Today's Top Deals" from data/products.json by selecting products where isDiscounted === true.
 // Enriches badge flags from data/intl-brands.json when available.
 // Matches the "Products" page UI badges (tags + meta pills) but does NOT show the price-range/tier UI.
@@ -322,7 +322,7 @@
 
     // Fallback: convention used across the site assets/img/products/<ASIN>.jpg
     var asin = safeText(offer && offer.asin);
-    if (asin) return resolveFromBase('assets/img/products/' + asin + '.jpg');
+    if (asin) return resolveFromBase((window.KBWG_RESOLVE ? window.KBWG_RESOLVE('assets/img/products/' + asin + '.jpg');
 
     return '';
   }
@@ -508,8 +508,8 @@
     setLoading(true);
     showEmpty(false);
 
-    var productsPath = resolveFromBase('data/products.json?v=2026-02-02-v21');
-    var brandsPath = resolveFromBase('data/intl-brands.json?v=2026-02-02-v21');
+    var productsPath = resolveFromBase('data/products.json?v=2026-02-03-v22');
+    var brandsPath = resolveFromBase('data/intl-brands.json?v=2026-02-03-v22');
 
     var productsReq = fetch(productsPath, { cache: 'no-store' }).then(function (r) {
       if (!r.ok) throw new Error('HTTP ' + r.status);

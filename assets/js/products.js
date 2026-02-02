@@ -1358,7 +1358,7 @@ const frag = document.createDocumentFragment();
         // Avoid broken cards / console noise when an image is missing.
         img.onerror = function(){
           try{ this.onerror = null; }catch(e){}
-          this.src = 'assets/img/products/placeholder.jpg';
+          this.src = (window.KBWG_RESOLVE ? window.KBWG_RESOLVE('assets/img/products/placeholder.jpg') : 'assets/img/products/placeholder.jpg');
         };
         media.appendChild(img);
       } else {

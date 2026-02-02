@@ -9,7 +9,7 @@
   const DATA_URL = (function(){
     // Works on GitHub Pages + local
     const base = document.currentScript?.dataset?.base || '';
-    return base + 'data/hidden-gems.json?v=2026-02-02-v21';
+    return base + 'data/hidden-gems.json?v=2026-02-02-v19';
   })();
 
   const STATE = {
