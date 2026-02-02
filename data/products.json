@@ -425,7 +425,8 @@
         "url": "https://www.amazon.com/dp/B09GX4CVBX?tag=nocrueltyil-20",
         "asin": "B09GX4CVBX",
         "currency": "USD",
-        "priceUSD": 11.89
+        "priceUSD": 11.89,
+        "freeShipOver": 49
       }
     ],
     "isKids": false,
@@ -2848,7 +2849,8 @@
         "url": "https://www.amazon.com/ATTITUDE-Natural-Protects-verified-Rosemary/dp/B0C15QW2Q1?tag=nocrueltyil-20",
         "asin": "B0C15QW2Q1",
         "currency": "USD",
-        "priceUSD": 11.29
+        "priceUSD": 11.29,
+        "freeShipOver": 49
       }
     ],
     "image": "assets/img/products/placeholder.jpg",

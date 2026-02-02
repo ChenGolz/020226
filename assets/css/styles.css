@@ -4592,3 +4592,23 @@ input,button,select,textarea{ font-family: inherit; }
   /* Ensure drawer layout stays vertical even if other CSS sets .nav to row */
   .siteHeader .nav{ flex-direction: column !important; flex-wrap: nowrap !important; }
 }
+
+
+/* ==== Desktop top nav: centered + wraps so last tabs are always visible (v31) ==== */
+@media (min-width: 921px){
+  .siteHeader .headerRow{
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .siteHeader .nav{
+    flex: 1 1 100% !important;
+    order: 99;
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    padding: 6px 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+  }
+}

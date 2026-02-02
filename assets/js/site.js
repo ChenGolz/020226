@@ -4,6 +4,54 @@
   // Build marker: use this to verify you loaded the latest JS
   window.KBWG_BUILD = '2026-02-02-v16';
   try { console.info('[KBWG] build', window.KBWG_BUILD); } catch(e) {}
+    // --- Compute a stable "site base" that works from / and from language folders like /en/ ---
+// Exposes:
+//   window.__kbwgSiteBase  -> '/repo' or '' (root) WITHOUT trailing slash
+//   window.__kbwgResolveFromSiteBase(rel) -> absolute URL path for same-origin assets/data
+function __kbwgSiteBaseFromScript(){
+  try{
+    var src = '';
+    try{ src = (document.currentScript && document.currentScript.src) ? document.currentScript.src : ''; }catch(e){ src=''; }
+    if(!src){
+      var scripts = document.getElementsByTagName('script');
+      for(var i=scripts.length-1;i>=0;i--){
+        var ssrc = scripts[i] && scripts[i].src ? String(scripts[i].src) : '';
+        if(ssrc.indexOf('site.js') !== -1){ src = ssrc; break; }
+      }
+    }
+    if(!src) return '';
+    var u = new URL(src, location.href);
+    var p = u.pathname || '/';
+    var idx = p.indexOf('/assets/js/');
+    var base = idx >= 0 ? p.slice(0, idx) : p.replace(/\/[^\/]+$/, '');
+    base = base.replace(/\/+$/, '');
+    var parts = base.split('/').filter(Boolean);
+    var langs = { en:1, he:1, iw:1, ar:1, fr:1, es:1, de:1, ru:1 };
+    if(parts.length && langs[parts[parts.length-1]]) parts.pop();
+    return parts.length ? ('/' + parts.join('/')) : '';
+  }catch(e){
+    return '';
+  }
+}
+function __kbwgResolveFromSiteBase(rel){
+  try{
+    if(!rel) return rel;
+    var p = String(rel).replace(/^\.\//,'');
+    if(/^https?:\/\//i.test(p)) return p;
+    // support root-absolute already
+    if(p.charAt(0) === '/') return p;
+    var base = (typeof window.__kbwgSiteBase === 'string') ? window.__kbwgSiteBase : '';
+    // If we are deployed at root, base is '' => '/'+p
+    return (base ? base : '') + '/' + p.replace(/^\/+/, '');
+  }catch(e){
+    return rel;
+  }
+}
+try{
+  window.__kbwgSiteBase = __kbwgSiteBaseFromScript();
+  window.__kbwgResolveFromSiteBase = __kbwgResolveFromSiteBase;
+}catch(e){}
+
     
 function kbwgInjectFaqSchema(){
   try{

@@ -65,20 +65,49 @@
   }
 
   async function loadDb() {
+  // Try a few candidate URLs so it works both from / and from language folders like /en/
+  // (and also on GitHub Pages project sites).
+  const urls = [];
+  try { urls.push(DB_URL); } catch(e) {}
+
+  try{
+    // If we're inside /en/, ../assets/... points at the root assets folder.
+    if (String(DB_URL).indexOf('assets/') === 0) urls.push('../' + DB_URL);
+  }catch(e){}
+
+  try{
+    // Prefer the site.js resolver (removes /en/ etc) when available.
+    if (typeof window.__kbwgResolveFromSiteBase === 'function') {
+      const alt = window.__kbwgResolveFromSiteBase(DB_URL);
+      if (alt && alt !== DB_URL) urls.push(alt);
+    }
+  }catch(e){}
+
+  // de-dupe
+  const seen = {};
+  const deduped = [];
+  urls.forEach(u => { if(u && !seen[u]){ seen[u]=1; deduped.push(u); } });
+
+  let lastErr = null;
+  for (const u of deduped) {
     try {
-      const res = await fetch(DB_URL, { cache: 'no-store' });
+      const res = await fetch(u, { cache: 'no-store' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       const list = Array.isArray(json) ? json : (json.ingredients || []);
       DB = indexDb(list);
       DB_READY = true;
-      console.log('[KBWG] ingredient DB loaded:', DB.length);
+      console.log('[KBWG] ingredient DB loaded:', DB.length, 'from', u);
+      return;
     } catch (e) {
-      DB = [];
-      DB_READY = false;
-      console.warn('[KBWG] ingredient DB load failed:', e);
+      lastErr = e;
     }
   }
+
+  DB = [];
+  DB_READY = false;
+  console.warn('[KBWG] ingredient DB load failed:', lastErr);
+}
 
   // ----- matching
   function matchOne(token) {
