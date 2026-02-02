@@ -2,7 +2,7 @@
 
 (function () {
   // Build marker: use this to verify you loaded the latest JS
-  window.KBWG_BUILD = '2026-01-31-v15';
+  window.KBWG_BUILD = '2026-02-02-v16';
   try { console.info('[KBWG] build', window.KBWG_BUILD); } catch(e) {}
     
 function kbwgInjectFaqSchema(){
@@ -134,6 +134,36 @@ function kbwgInitMobileNav() {
   const mq = window.matchMedia('(max-width: 900px)');
   let isOpen = false;
 
+
+  // Inline stacking fix: some pages introduce header stacking contexts that can hide the drawer.
+  const __kbwgInline = {
+    headerZ: header.style.zIndex,
+    navZ: nav.style.zIndex,
+    overlayZ: overlay.style.zIndex,
+    headerBF: header.style.backdropFilter,
+    headerWBF: header.style.webkitBackdropFilter,
+    headerFilter: header.style.filter,
+    headerTransform: header.style.transform,
+  };
+  function applyStackingFix(){
+    header.style.zIndex = '2147483000';
+    nav.style.zIndex = '2147483010';
+    overlay.style.zIndex = '2147482990';
+    header.style.backdropFilter = 'none';
+    header.style.webkitBackdropFilter = 'none';
+    header.style.filter = 'none';
+    header.style.transform = 'none';
+  }
+  function resetStackingFix(){
+    header.style.zIndex = __kbwgInline.headerZ || '';
+    nav.style.zIndex = __kbwgInline.navZ || '';
+    overlay.style.zIndex = __kbwgInline.overlayZ || '';
+    header.style.backdropFilter = __kbwgInline.headerBF || '';
+    header.style.webkitBackdropFilter = __kbwgInline.headerWBF || '';
+    header.style.filter = __kbwgInline.headerFilter || '';
+    header.style.transform = __kbwgInline.headerTransform || '';
+  }
+
   function closeAllNavGroups(except) {
     nav.querySelectorAll('details.navGroup[open]').forEach((d) => {
       if (except && d === except) return;
@@ -154,6 +184,7 @@ function kbwgInitMobileNav() {
     header.classList.add('navOpen');
     document.body.classList.add('menuOpen');
     btn.setAttribute('aria-expanded', 'true');
+    applyStackingFix();
   };
 
   const close = () => {
@@ -161,6 +192,7 @@ function kbwgInitMobileNav() {
     header.classList.remove('navOpen');
     document.body.classList.remove('menuOpen');
     btn.setAttribute('aria-expanded', 'false');
+    resetStackingFix();
     closeAllNavGroups();
   };
 

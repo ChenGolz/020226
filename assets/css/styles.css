@@ -4569,3 +4569,26 @@ input,button,select,textarea{ font-family: inherit; }
   body.menuOpen .siteHeader .nav,
   body.menuopen .siteHeader .nav{ z-index: 2147483010 !important; }
 }
+/* =========================================================
+   MOBILE NAV LAYERING HOTFIX (2026-02-02)
+   Fixes cases where the drawer appears "behind" the page due to
+   header stacking contexts / later overrides.
+   ========================================================= */
+@media (max-width: 920px){
+  /* Remove stacking-context effects that can trap fixed children */
+  .siteHeader{
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    filter: none !important;
+    transform: none !important;
+    will-change: auto !important;
+  }
+
+  /* Keep header/nav above the overlay and the page */
+  body.menuOpen .siteHeader{ z-index: 2147483000 !important; }
+  body.menuOpen .siteHeader .nav{ z-index: 2147483010 !important; }
+  body.menuOpen .navOverlay{ z-index: 2147482990 !important; }
+
+  /* Ensure drawer layout stays vertical even if other CSS sets .nav to row */
+  .siteHeader .nav{ flex-direction: column !important; flex-wrap: nowrap !important; }
+}
